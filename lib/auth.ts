@@ -94,9 +94,10 @@ export function hashPassword(password: string): string {
 }
 
 export async function getSession(): Promise<string | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const email = cookieStore.get("fv_session")?.value ?? null;
   if (!email) return null;
+
   const { data } = await supabase.from("users").select("email").eq("email", email).single();
   return data?.email ?? null;
 }
@@ -104,12 +105,15 @@ export async function getSession(): Promise<string | null> {
 export async function getCurrentUser(): Promise<User | null> {
   const email = await getSession();
   if (!email) return null;
+
   const { data, error } = await supabase
     .from("users")
     .select("id,email,password_hash,family_name,created_at, family_members(*)")
     .eq("email", email)
     .single();
+
   if (error || !data) return null;
+
   const members = (data.family_members || []).map((m: any) => ({
     id: String(m.id),
     name: m.name,
@@ -120,6 +124,7 @@ export async function getCurrentUser(): Promise<User | null> {
     focus: m.focus,
     restingHr: m.restingHr ?? m.resting_hr,
   }));
+
   return {
     email: data.email,
     passwordHash: data.password_hash,
