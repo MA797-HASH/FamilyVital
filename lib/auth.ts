@@ -19,45 +19,112 @@ export interface User {
   createdAt: string;
 }
 
-import { readFileSync, writeFileSync, existsSync } from "fs";
-import { join } from "path";
 import { createHash } from "crypto";
+import { createClient } from "@supabase/supabase-js";
 
-const DB_PATH = join(process.cwd(), "data", "users.json");
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
-function ensureDB() {
-  const dir = join(process.cwd(), "data");
-  if (!existsSync(dir)) {
-    const { mkdirSync } = require("fs");
-    mkdirSync(dir, { recursive: true });
+export async function getUsers(): Promise<Record<string, User>> {
+  const { data, error } = await supabase
+    .from("users")
+    .select("id,email,password_hash,family_name,created_at, family_members(*)");
+  if (error || !data) return {};
+  const out: Record<string, User> = {};
+  for (const u of data as any[]) {
+    const members = (u.family_members || []).map((m: any) => ({
+      id: String(m.id),
+      name: m.name,
+      age: m.age,
+      role: m.role,
+      initials: m.initials,
+      avatarColor: m.avatarColor ?? m.avatar_color,
+      focus: m.focus,
+      restingHr: m.restingHr ?? m.resting_hr,
+    }));
+    out[u.email] = {
+      email: u.email,
+      passwordHash: u.password_hash,
+      familyName: u.family_name,
+      members,
+      createdAt: u.created_at,
+    };
   }
-  if (!existsSync(DB_PATH)) {
-    writeFileSync(DB_PATH, JSON.stringify({}));
-  }
+  return out;
 }
 
-export function getUsers(): Record<string, User> {
-  ensureDB();
-  return JSON.parse(readFileSync(DB_PATH, "utf-8"));
-}
-
-export function saveUsers(users: Record<string, User>) {
-  ensureDB();
-  writeFileSync(DB_PATH, JSON.stringify(users, null, 2));
+export async function saveUsers(users: Record<string, User>) {
+  for (const email of Object.keys(users)) {
+    const u = users[email];
+    // upsert user
+    const { error: upsertErr } = await supabase.from("users").upsert({
+      email: u.email,
+      password_hash: u.passwordHash,
+      family_name: u.familyName,
+      created_at: u.createdAt,
+    });
+    if (upsertErr) continue;
+    // fetch id
+    const { data: userRow } = await supabase.from("users").select("id").eq("email", u.email).single();
+    if (!userRow) continue;
+    const userId = userRow.id;
+    // delete existing members and re-insert
+    await supabase.from("family_members").delete().eq("user_id", userId);
+    if (u.members && u.members.length > 0) {
+      const toInsert = u.members.map((m) => ({
+        id: m.id,
+        name: m.name,
+        age: m.age,
+        role: m.role,
+        initials: m.initials,
+        avatarColor: m.avatarColor,
+        focus: m.focus,
+        restingHr: m.restingHr,
+        user_id: userId,
+      }));
+      await supabase.from("family_members").insert(toInsert);
+    }
+  }
 }
 
 export function hashPassword(password: string): string {
   return createHash("sha256").update(password + "familyvital_salt").digest("hex");
 }
 
-export function getSession(): string | null {
+export async function getSession(): Promise<string | null> {
   const cookieStore = cookies();
-  return cookieStore.get("fv_session")?.value ?? null;
+  const email = cookieStore.get("fv_session")?.value ?? null;
+  if (!email) return null;
+  const { data } = await supabase.from("users").select("email").eq("email", email).single();
+  return data?.email ?? null;
 }
 
-export function getCurrentUser(): User | null {
-  const email = getSession();
+export async function getCurrentUser(): Promise<User | null> {
+  const email = await getSession();
   if (!email) return null;
-  const users = getUsers();
-  return users[email] ?? null;
+  const { data, error } = await supabase
+    .from("users")
+    .select("id,email,password_hash,family_name,created_at, family_members(*)")
+    .eq("email", email)
+    .single();
+  if (error || !data) return null;
+  const members = (data.family_members || []).map((m: any) => ({
+    id: String(m.id),
+    name: m.name,
+    age: m.age,
+    role: m.role,
+    initials: m.initials,
+    avatarColor: m.avatarColor ?? m.avatar_color,
+    focus: m.focus,
+    restingHr: m.restingHr ?? m.resting_hr,
+  }));
+  return {
+    email: data.email,
+    passwordHash: data.password_hash,
+    familyName: data.family_name,
+    members,
+    createdAt: data.created_at,
+  };
 }

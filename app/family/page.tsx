@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import FamilyClient from "./family-client";
 
 export default async function FamilyPage() {
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   return (
