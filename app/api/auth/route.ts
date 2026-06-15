@@ -49,7 +49,8 @@ export async function POST(req: Request) {
   if (action === "addMember") {
     const { data: user } = await supabase.from("users").select("id").eq("email", email).single();
     if (!user) return NextResponse.json({ error: "Non connecté." }, { status: 401 });
-    await supabase.from("family_members").insert({ ...member, user_id: user.id });
+    const { error: insertError } = await supabase.from("family_members").insert({ ...member, user_id: user.id });
+    if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
     const { data: members } = await supabase.from("family_members").select("*").eq("user_id", user.id);
     return NextResponse.json({ ok: true, members });
   }
