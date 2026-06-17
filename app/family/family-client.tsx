@@ -76,7 +76,7 @@ export default function FamilyClient({ user }: { user: User }) {
           <Card key={m.id} className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
             <div className="flex items-center gap-4">
               <Avatar className="size-14">
-                <AvatarFallback style={{ backgroundColor: m.avatarColor }} className="text-lg font-bold text-white">
+                  <AvatarFallback style={{ backgroundColor: m.avatar_color }} className="text-lg font-bold text-white">
                   {m.initials}
                 </AvatarFallback>
               </Avatar>
@@ -88,7 +88,10 @@ export default function FamilyClient({ user }: { user: User }) {
                 <Trash2 className="size-4" />
               </button>
             </div>
-            <Badge variant="secondary" className="w-fit">{m.focus}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="w-fit">{m.focus}</Badge>
+              <span className="text-sm text-muted-foreground">{m.resting_hr} bpm</span>
+            </div>
           </Card>
         ))}
       </div>
