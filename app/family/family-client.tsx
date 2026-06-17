@@ -27,7 +27,6 @@ export default function FamilyClient({ user }: { user: User }) {
     if (!age || isNaN(ageNum) || ageNum < 0 || ageNum > 120) return setError("Âge invalide.");
     setLoading(true);
     const newMember: FamilyMember = {
-      id: Date.now().toString(),
       name: name.trim(),
       age: ageNum,
       role,
