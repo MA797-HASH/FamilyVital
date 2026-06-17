@@ -32,9 +32,9 @@ export default function FamilyClient({ user }: { user: User }) {
       age: ageNum,
       role,
       initials: name.trim().charAt(0).toUpperCase(),
-      avatarColor: COLORS[members.length % COLORS.length],
+      avatar_color: COLORS[members.length % COLORS.length],
       focus: "Général",
-      restingHr: 70,
+      resting_hr: 70,
     };
     const res = await fetch("/api/auth", {
       method: "POST",
