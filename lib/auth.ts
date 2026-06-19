@@ -1,14 +1,14 @@
 import { cookies } from "next/headers";
 
 export interface FamilyMember {
-  id: string;
+  id?: string;
   name: string;
   age: number;
   role: string;
   initials: string;
-  avatarColor: string;
+  avatar_color: string;
   focus: string;
-  restingHr: number;
+  resting_hr: number;
 }
 
 export interface User {
@@ -40,9 +40,9 @@ export async function getUsers(): Promise<Record<string, User>> {
       age: m.age,
       role: m.role,
       initials: m.initials,
-      avatarColor: m.avatarColor ?? m.avatar_color,
+      avatar_color: m.avatar_color ?? m.avatarColor,
       focus: m.focus,
-      restingHr: m.restingHr ?? m.resting_hr,
+      resting_hr: m.resting_hr ?? m.restingHr,
     }));
     out[u.email] = {
       email: u.email,
@@ -79,9 +79,9 @@ export async function saveUsers(users: Record<string, User>) {
         age: m.age,
         role: m.role,
         initials: m.initials,
-        avatarColor: m.avatarColor,
+        avatar_color: m.avatar_color,
         focus: m.focus,
-        restingHr: m.restingHr,
+        resting_hr: m.resting_hr,
         user_id: userId,
       }));
       await supabase.from("family_members").insert(toInsert);
@@ -120,9 +120,9 @@ export async function getCurrentUser(): Promise<User | null> {
     age: m.age,
     role: m.role,
     initials: m.initials,
-    avatarColor: m.avatarColor ?? m.avatar_color,
+    avatar_color: m.avatar_color ?? m.avatarColor,
     focus: m.focus,
-    restingHr: m.restingHr ?? m.resting_hr,
+    resting_hr: m.resting_hr ?? m.restingHr,
   }));
 
   return {
