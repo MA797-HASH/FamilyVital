@@ -73,7 +73,7 @@ export default function FamilyClient({ user }: { user: User }) {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
-          <Card key={m.id} className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
+            <Card key={m.id || ""} className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
             <div className="flex items-center gap-4">
               <Avatar className="size-14">
                   <AvatarFallback style={{ backgroundColor: m.avatar_color }} className="text-lg font-bold text-white">
@@ -84,7 +84,7 @@ export default function FamilyClient({ user }: { user: User }) {
                 <p className="font-heading text-lg font-bold text-foreground">{m.name}</p>
                 <p className="text-sm text-muted-foreground">{m.role} · {m.age} ans</p>
               </div>
-              <button onClick={() => removeMember(m.id)} className="text-red-400 hover:text-red-600 transition-colors">
+              <button onClick={() => removeMember(m.id!)} className="text-red-400 hover:text-red-600 transition-colors">
                 <Trash2 className="size-4" />
               </button>
             </div>
