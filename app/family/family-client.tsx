@@ -90,7 +90,7 @@ export default function FamilyClient({ user }: { user: User }) {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="w-fit">{m.focus}</Badge>
-              <span className="text-sm text-muted-foreground">{m.resting_hr} bpm</span>
+              <span className="text-sm text-muted-foreground">&nbsp; ­.&nbsp;{m.resting_hr} bpm</span>
             </div>
           </Card>
         ))}
