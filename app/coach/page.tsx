@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,23 +14,70 @@ const suggestions = [
   "Give Sofia ideas to cut screen time",
 ]
 
+type ChatMessage = {
+  id: string
+  role: "user" | "assistant"
+  content: string
+}
+
 export default function CoachPage() {
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/coach" }),
-  })
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
+  const [loading, setLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const busy = status === "streaming" || status === "submitted"
+  const busy = loading
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
-  }, [messages])
+  }, [messages, loading])
+
+  async function sendMessage(text: string) {
+    const value = text.trim()
+    if (!value || busy) return
+
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content: value,
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setLoading(true)
+
+    try {
+      const response = await fetch("/api/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: value }),
+      })
+
+      const data = await response.json()
+      const assistantContent = typeof data.completion === "string" ? data.completion : "Sorry, I couldn't get a response."
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: "assistant",
+        content: assistantContent,
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `assistant-error-${Date.now()}`,
+          role: "assistant",
+          content: "Sorry, something went wrong while contacting the coach.",
+        },
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   function submit(text: string) {
     const value = text.trim()
     if (!value || busy) return
-    sendMessage({ text: value })
-    setInput("")
+    sendMessage(value)
   }
 
   return (
@@ -55,14 +100,10 @@ export default function CoachPage() {
             <div className="flex flex-col gap-4">
               {messages.map((m) => (
                 <Bubble key={m.id} role={m.role}>
-                  {m.parts
-                    .filter((p) => p.type === "text")
-                    .map((p, i) => (
-                      <span key={i}>{(p as { text: string }).text}</span>
-                    ))}
+                  {m.content}
                 </Bubble>
               ))}
-              {status === "submitted" && (
+              {loading && (
                 <Bubble role="assistant">
                   <span className="inline-flex gap-1">
                     <Dot /> <Dot /> <Dot />
