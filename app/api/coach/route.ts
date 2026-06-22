@@ -43,6 +43,7 @@ ${buildFamilyContext()}`
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
+      max_tokens: 1024,
       messages: [
         { role: "system", content: prompt },
         { role: "user", content: message },
