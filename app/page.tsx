@@ -6,16 +6,35 @@ import { MemberSnapshot } from "@/components/member-snapshot"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { family, reminders, memberById } from "@/lib/data"
+import { reminders, memberById, type FamilyMember } from "@/lib/data"
 import { getCurrentUser } from "@/lib/auth"
 import { Footprints, Moon, Droplet, HeartPulse, MessageCircleHeart, ArrowRight, Bell } from "lucide-react"
 
 export default async function DashboardPage() {
   const user = await getCurrentUser()
-  const totalSteps = family.reduce((s, m) => s + m.metrics.steps.value, 0)
-  const avgSleep = (family.reduce((s, m) => s + m.metrics.sleep.value, 0) / family.length).toFixed(1)
-  const totalWater = family.reduce((s, m) => s + m.metrics.water.value, 0)
-  const avgHr = Math.round(family.reduce((s, m) => s + m.vitals.restingHr, 0) / family.length)
+  const familyMembers: FamilyMember[] = (user?.members ?? []).map((m) => ({
+    id: m.id ?? m.name,
+    name: m.name,
+    role: m.role,
+    age: m.age,
+    avatarColor: m.avatar_color ?? "#888",
+    initials: m.initials ?? m.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
+    focus: m.focus,
+    metrics: {
+      steps: { value: 0, goal: 10000 },
+      sleep: { value: 0, goal: 8 },
+      water: { value: 0, goal: 8 },
+      activeMinutes: { value: 0, goal: 60 },
+    },
+    vitals: {
+      restingHr: m.resting_hr ?? 0,
+      weeklyMood: 3,
+    },
+  }))
+  const totalSteps = familyMembers.reduce((s, m) => s + m.metrics.steps.value, 0)
+  const avgSleep = familyMembers.length ? (familyMembers.reduce((s, m) => s + m.metrics.sleep.value, 0) / familyMembers.length).toFixed(1) : "0.0"
+  const totalWater = familyMembers.reduce((s, m) => s + m.metrics.water.value, 0)
+  const avgHr = familyMembers.length ? Math.round(familyMembers.reduce((s, m) => s + m.vitals.restingHr, 0) / familyMembers.length) : 0
   const upcoming = reminders.filter((r) => !r.done).slice(0, 4)
 
   return (
@@ -83,7 +102,7 @@ export default async function DashboardPage() {
             </Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {family.map((m) => (
+            {familyMembers.map((m) => (
               <MemberSnapshot key={m.id} member={m} />
             ))}
           </div>
