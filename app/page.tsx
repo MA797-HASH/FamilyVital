@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { family, reminders, memberById } from "@/lib/data"
+import { getCurrentUser } from "@/lib/auth"
 import { Footprints, Moon, Droplet, HeartPulse, MessageCircleHeart, ArrowRight, Bell } from "lucide-react"
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await getCurrentUser()
   const totalSteps = family.reduce((s, m) => s + m.metrics.steps.value, 0)
   const avgSleep = (family.reduce((s, m) => s + m.metrics.sleep.value, 0) / family.length).toFixed(1)
   const totalWater = family.reduce((s, m) => s + m.metrics.water.value, 0)
@@ -21,7 +23,7 @@ export default function DashboardPage() {
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-medium text-primary">Good morning, Rivera family</p>
+            <p className="text-sm font-medium text-primary">Good morning, {user?.familyName} family</p>
             <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground text-balance">
               Your family is thriving today
             </h1>
