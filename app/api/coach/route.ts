@@ -52,7 +52,8 @@ ${buildFamilyContext()}`
 
   if (!response.ok) {
     const errorBody = await response.text()
-    return NextResponse.json({ error: "Anthropic request failed.", details: errorBody }, { status: response.status })
+    console.error("Anthropic error:", errorBody)
+    return NextResponse.json({ error: "Anthropic request failed.", details: errorBody, body: errorBody }, { status: response.status })
   }
 
   const data = await response.json()
