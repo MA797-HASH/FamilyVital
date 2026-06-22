@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages, type UIMessage } from "ai"
+import { NextResponse } from "next/server"
 import { family, goals, reminders } from "@/lib/data"
 
 export const maxDuration = 30
@@ -16,19 +16,49 @@ function buildFamilyContext() {
 }
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json()
+  const { message }: { message: string } = await req.json()
+  if (!message) {
+    return NextResponse.json({ error: "Missing user message." }, { status: 400 })
+  }
 
-  const result = streamText({
-    model: "anthropic/claude-sonnet-4.6",
-    system: `You are FamilyVital, a warm, encouraging family health coach. You help a household build healthier habits together.
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return NextResponse.json({ error: "Anthropic API key is not configured." }, { status: 500 })
+  }
+
+  const prompt = `You are FamilyVital, a warm, encouraging family health coach. You help a household build healthier habits together.
 
 Use the family's live data below to give specific, personalized, and actionable guidance. Reference members by name. Keep responses concise, friendly, and practical — suggest small wins the whole family can do together. Celebrate streaks and progress.
 
 You are NOT a doctor. For anything that sounds like a medical concern, gently recommend consulting a healthcare professional. Never diagnose or prescribe.
 
-${buildFamilyContext()}`,
-    messages: await convertToModelMessages(messages),
+${buildFamilyContext()}`
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      messages: [
+        { role: "system", content: prompt },
+        { role: "user", content: message },
+      ],
+    }),
   })
 
-  return result.toUIMessageStreamResponse()
+  if (!response.ok) {
+    const errorBody = await response.text()
+    return NextResponse.json({ error: "Anthropic request failed.", details: errorBody }, { status: response.status })
+  }
+
+  const data = await response.json()
+  const completion =
+    typeof data.completion === "string"
+      ? data.completion
+      : data?.message?.content ?? data?.messages?.[0]?.content ?? ""
+
+  return NextResponse.json({ completion })
 }
