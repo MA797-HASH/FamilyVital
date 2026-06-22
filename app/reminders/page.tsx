@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { AppShell } from "@/components/app-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -15,6 +15,31 @@ import { cn } from "@/lib/utils"
 
 export default function RemindersPage() {
   const [items, setItems] = useState(seedReminders)
+  const [showForm, setShowForm] = useState(false)
+  const [newTitle, setNewTitle] = useState("")
+  const [newTime, setNewTime] = useState("08:00")
+  const [newRepeat, setNewRepeat] = useState("Daily")
+
+  function addReminder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!newTitle.trim() || !newTime) return
+
+    const nextReminder = {
+      id: `r${Date.now()}`,
+      title: newTitle.trim(),
+      memberId: items[0]?.memberId ?? "maya",
+      time: newTime,
+      category: "Activity",
+      done: false,
+      repeat: newRepeat,
+    }
+
+    setItems((prev) => [nextReminder, ...prev])
+    setNewTitle("")
+    setNewTime("08:00")
+    setNewRepeat("Daily")
+    setShowForm(false)
+  }
 
   function toggle(id: string) {
     setItems((prev) => prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r)))
@@ -32,11 +57,62 @@ export default function RemindersPage() {
               {completed} of {items.length} reminders done today. Keep the streak going.
             </p>
           </div>
-          <Button size="lg">
+          <Button size="lg" onClick={() => setShowForm((prev) => !prev)}>
             <Plus className="size-5" />
             New
           </Button>
         </header>
+
+        {showForm && (
+          <Card className="mt-6 p-6">
+            <form onSubmit={addReminder} className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="title" className="text-sm font-medium text-foreground">
+                  Titre
+                </label>
+                <input
+                  id="title"
+                  value={newTitle}
+                  onChange={(event) => setNewTitle(event.target.value)}
+                  className="rounded-lg border border-border px-3 py-2 text-sm"
+                  placeholder="Ex: Boire de l'eau"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="time" className="text-sm font-medium text-foreground">
+                  Heure
+                </label>
+                <input
+                  id="time"
+                  type="time"
+                  value={newTime}
+                  onChange={(event) => setNewTime(event.target.value)}
+                  className="rounded-lg border border-border px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <label htmlFor="repeat" className="text-sm font-medium text-foreground">
+                  Fréquence
+                </label>
+                <select
+                  id="repeat"
+                  value={newRepeat}
+                  onChange={(event) => setNewRepeat(event.target.value)}
+                  className="rounded-lg border border-border px-3 py-2 text-sm"
+                >
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Once</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <Button type="submit" className="w-full">
+                  Ajouter
+                </Button>
+              </div>
+            </form>
+          </Card>
+        )}
 
         <Tabs defaultValue="reminders" className="mt-6">
           <TabsList>
