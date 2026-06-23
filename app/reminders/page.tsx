@@ -98,11 +98,28 @@ export default function RemindersPage() {
       <h1 className="text-2xl font-bold mb-6">Reminders & Goals</h1>
 
       {/* Formulaire ajout */}
-      <div className="bg-white rounded-xl shadow p-4 mb-6 space-y-3">
-        <h2 className="font-semibold text-lg">Nouveau reminder</h2>
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "1rem",
+          boxShadow: "0 10px 20px rgba(0, 0, 0, 0.08)",
+          padding: "1rem",
+          marginBottom: "1.5rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.75rem",
+        }}
+      >
+        <h2 style={{ fontWeight: 600, fontSize: "1.125rem" }}>Nouveau reminder</h2>
 
         <input
-          className="w-full border rounded px-3 py-2"
+          style={{
+            width: "100%",
+            border: "1px solid #d1d5db",
+            borderRadius: "0.75rem",
+            padding: "0.75rem 0.85rem",
+            fontSize: "0.95rem",
+          }}
           placeholder="Titre (ex: Prendre médicament)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -110,13 +127,26 @@ export default function RemindersPage() {
 
         <input
           type="time"
-          className="w-full border rounded px-3 py-2"
+          style={{
+            width: "100%",
+            border: "1px solid #d1d5db",
+            borderRadius: "0.75rem",
+            padding: "0.75rem 0.85rem",
+            fontSize: "0.95rem",
+          }}
           value={time}
           onChange={(e) => setTime(e.target.value)}
         />
 
         <select
-          className="w-full border rounded px-3 py-2"
+          style={{
+            width: "100%",
+            border: "1px solid #d1d5db",
+            borderRadius: "0.75rem",
+            padding: "0.75rem 0.85rem",
+            fontSize: "0.95rem",
+            backgroundColor: "#ffffff",
+          }}
           value={repeat}
           onChange={(e) => setRepeat(e.target.value)}
         >
@@ -126,7 +156,14 @@ export default function RemindersPage() {
         </select>
 
         <select
-          className="w-full border rounded px-3 py-2"
+          style={{
+            width: "100%",
+            border: "1px solid #d1d5db",
+            borderRadius: "0.75rem",
+            padding: "0.75rem 0.85rem",
+            fontSize: "0.95rem",
+            backgroundColor: "#ffffff",
+          }}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
@@ -139,7 +176,18 @@ export default function RemindersPage() {
 
         <button
           onClick={handleAdd}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          style={{
+            display: "block",
+            width: "100%",
+            backgroundColor: "#2563eb",
+            color: "#ffffff",
+            padding: "0.85rem 1rem",
+            borderRadius: "0.75rem",
+            border: "none",
+            cursor: "pointer",
+            textAlign: "center",
+            fontWeight: 600,
+          }}
         >
           Ajouter
         </button>
