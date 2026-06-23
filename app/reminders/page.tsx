@@ -91,6 +91,16 @@ export default function RemindersPage() {
     }
   };
 
+  // 4. Supprimer un reminder
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("reminders").delete().eq("id", id);
+    if (!error) {
+      setReminders((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      console.error("Erreur suppression reminder:", error);
+    }
+  };
+
   if (loading) return <div className="p-6">Chargement des reminders...</div>;
 
   return (
@@ -221,6 +231,18 @@ export default function RemindersPage() {
                   {r.time && `🕐 ${r.time}`} {r.category && `· ${r.category}`} {r.repeat !== "none" && `· ${r.repeat}`}
                 </p>
               </div>
+              <button
+                onClick={() => handleDelete(r.id)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#ef4444",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Supprimer
+              </button>
             </div>
           ))
         )}
