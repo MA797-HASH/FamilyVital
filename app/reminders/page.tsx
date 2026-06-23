@@ -178,6 +178,8 @@ export default function RemindersPage() {
           onClick={handleAdd}
           style={{
             display: "block",
+            position: "relative",
+            zIndex: 10,
             width: "100%",
             backgroundColor: "#2563eb",
             color: "#ffffff",
