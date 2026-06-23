@@ -68,7 +68,7 @@ export default function MetricsPage() {
       steps: parsedSteps,
       sleep_hours: parsedSleep,
       water_glasses: parsedWater,
-      recorded_at: new Date().toISOString(),
+      date: new Date().toISOString().slice(0, 10),
     });
 
     setSaving(false);
