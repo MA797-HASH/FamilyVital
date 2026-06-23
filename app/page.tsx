@@ -19,17 +19,49 @@ const supabase = createClient(
 export default async function DashboardPage() {
   const user = await getCurrentUser()
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = new Date()
+  const todayString = today.toISOString().slice(0, 10)
   const memberIds = (user?.members ?? []).map((m) => m.id).filter(Boolean)
 
-  const { data: metricsData, error: metricsError } = await supabase
-    .from("health_metrics")
-    .select("family_member_id, steps, sleep_hours, water_glasses, date")
-    .in("family_member_id", memberIds)
-    .eq("date", today)
+  const { data: metricsData, error: metricsError } = memberIds.length
+    ? await supabase
+        .from("health_metrics")
+        .select("family_member_id, steps, sleep_hours, water_glasses, date")
+        .in("family_member_id", memberIds)
+        .eq("date", todayString)
+    : { data: [], error: null }
 
   if (metricsError) {
     console.error("Erreur récupération metrics du jour:", metricsError)
+  }
+
+  const streakDaysAgo = new Date(today)
+  streakDaysAgo.setDate(today.getDate() - 30)
+  const streakFromDate = streakDaysAgo.toISOString().slice(0, 10)
+  const { data: streakData, error: streakError } = memberIds.length
+    ? await supabase
+        .from("health_metrics")
+        .select("date")
+        .in("family_member_id", memberIds)
+        .gte("date", streakFromDate)
+        .order("date", { ascending: false })
+    : { data: [], error: null }
+
+  if (streakError) {
+    console.error("Erreur récupération du streak:", streakError)
+  }
+
+  const streakDates = new Set((streakData ?? []).map((row: any) => String(row.date)))
+  let familyStreak = 0
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() - i)
+    const dateKey = date.toISOString().slice(0, 10)
+    if (streakDates.has(dateKey)) {
+      familyStreak += 1
+    } else {
+      break
+    }
   }
 
   const metricsByMemberId = new Map<string, { steps: number; sleep_hours: number; water_glasses: number }>()
@@ -74,7 +106,7 @@ export default async function DashboardPage() {
   const upcoming = reminders.filter((r) => !r.done).slice(0, 4)
 
   return (
-    <AppShell>
+    <AppShell streak={familyStreak}>
       <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>

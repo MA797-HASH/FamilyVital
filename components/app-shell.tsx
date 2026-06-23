@@ -13,7 +13,7 @@ const nav = [
   { href: "/coach", label: "AI Coach", icon: MessageCircleHeart },
 ]
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, streak = 0 }: { children: React.ReactNode; streak?: number }) {
   const pathname = usePathname()
 
   return (
@@ -46,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Activity className="size-4" aria-hidden="true" />
             <span className="text-sm font-semibold">Family streak</span>
           </div>
-          <p className="mt-1 text-2xl font-bold text-sidebar-accent-foreground font-heading">12 days</p>
+          <p className="mt-1 text-2xl font-bold text-sidebar-accent-foreground font-heading">{streak} days</p>
           <p className="text-xs text-sidebar-accent-foreground/80">Everyone hit their goals!</p>
         </div>
       </aside>
