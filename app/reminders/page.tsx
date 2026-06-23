@@ -19,10 +19,11 @@ type Reminder = {
   created_at: string;
 };
 
+const PLACEHOLDER_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 export default function RemindersPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   // Formulaire
   const [title, setTitle] = useState("");
@@ -30,17 +31,12 @@ export default function RemindersPage() {
   const [repeat, setRepeat] = useState("none");
   const [category, setCategory] = useState("general");
 
-  // 1. Récupérer l'user connecté + charger ses reminders
+  // 1. Charger tous les reminders sans filtre user
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setUserId(user.id);
-
       const { data, error } = await supabase
         .from("reminders")
         .select("*")
-        .eq("user_id", user.id)
         .order("created_at", { ascending: true });
 
       if (!error && data) setReminders(data as Reminder[]);
@@ -51,10 +47,10 @@ export default function RemindersPage() {
 
   // 2. Ajouter un reminder dans Supabase
   const handleAdd = async () => {
-    if (!title.trim() || !userId) return;
+    if (!title.trim()) return;
 
     const newReminder = {
-      user_id: userId,
+      user_id: PLACEHOLDER_USER_ID,
       title: title.trim(),
       time,
       repeat,
