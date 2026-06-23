@@ -8,29 +8,65 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { reminders, memberById, type FamilyMember } from "@/lib/data"
 import { getCurrentUser } from "@/lib/auth"
+import { createClient } from "@supabase/supabase-js"
 import { Footprints, Moon, Droplet, HeartPulse, MessageCircleHeart, ArrowRight, Bell } from "lucide-react"
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default async function DashboardPage() {
   const user = await getCurrentUser()
-  const familyMembers: FamilyMember[] = (user?.members ?? []).map((m) => ({
-    id: m.id ?? m.name,
-    name: m.name,
-    role: m.role,
-    age: m.age,
-    avatarColor: m.avatar_color ?? "#888",
-    initials: m.initials ?? m.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
-    focus: m.focus,
-    metrics: {
-      steps: { value: 0, goal: 10000 },
-      sleep: { value: 0, goal: 8 },
-      water: { value: 0, goal: 8 },
-      activeMinutes: { value: 0, goal: 60 },
-    },
-    vitals: {
-      restingHr: m.resting_hr ?? 0,
-      weeklyMood: 3,
-    },
-  }))
+
+  const today = new Date().toISOString().slice(0, 10)
+  const memberIds = (user?.members ?? []).map((m) => m.id).filter(Boolean)
+
+  const { data: metricsData, error: metricsError } = await supabase
+    .from("health_metrics")
+    .select("family_member_id, steps, sleep_hours, water_glasses, date")
+    .in("family_member_id", memberIds)
+    .eq("date", today)
+
+  if (metricsError) {
+    console.error("Erreur récupération metrics du jour:", metricsError)
+  }
+
+  const metricsByMemberId = new Map<string, { steps: number; sleep_hours: number; water_glasses: number }>()
+  ;(metricsData ?? []).forEach((row: any) => {
+    if (row.family_member_id) {
+      metricsByMemberId.set(String(row.family_member_id), {
+        steps: row.steps ?? 0,
+        sleep_hours: row.sleep_hours ?? 0,
+        water_glasses: row.water_glasses ?? 0,
+      })
+    }
+  })
+
+  const familyMembers: FamilyMember[] = (user?.members ?? []).map((m) => {
+    const memberId = String(m.id ?? m.name)
+    const metrics = metricsByMemberId.get(memberId)
+
+    return {
+      id: memberId,
+      name: m.name,
+      role: m.role,
+      age: m.age,
+      avatarColor: m.avatar_color ?? "#888",
+      initials: m.initials ?? m.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
+      focus: m.focus,
+      metrics: {
+        steps: { value: metrics?.steps ?? 0, goal: 10000 },
+        sleep: { value: metrics?.sleep_hours ?? 0, goal: 8 },
+        water: { value: metrics?.water_glasses ?? 0, goal: 8 },
+        activeMinutes: { value: 0, goal: 60 },
+      },
+      vitals: {
+        restingHr: m.resting_hr ?? 0,
+        weeklyMood: 3,
+      },
+    }
+  })
   const totalSteps = familyMembers.reduce((s, m) => s + m.metrics.steps.value, 0)
   const avgSleep = familyMembers.length ? (familyMembers.reduce((s, m) => s + m.metrics.sleep.value, 0) / familyMembers.length).toFixed(1) : "0.0"
   const totalWater = familyMembers.reduce((s, m) => s + m.metrics.water.value, 0)
