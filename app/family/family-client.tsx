@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -73,26 +74,28 @@ export default function FamilyClient({ user }: { user: User }) {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((m) => (
-            <Card key={m.id || ""} className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
-            <div className="flex items-center gap-4">
-              <Avatar className="size-14">
+          <Link key={m.id || ""} href={`/family/${m.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+            <Card className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
+              <div className="flex items-center gap-4">
+                <Avatar className="size-14">
                   <AvatarFallback style={{ backgroundColor: m.avatar_color }} className="text-lg font-bold text-white">
-                  {m.initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="font-heading text-lg font-bold text-foreground">{m.name}</p>
-                <p className="text-sm text-muted-foreground">{m.role} · {m.age} ans</p>
+                    {m.initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-heading text-lg font-bold text-foreground">{m.name}</p>
+                  <p className="text-sm text-muted-foreground">{m.role} · {m.age} ans</p>
+                </div>
+                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeMember(m.id!); }} className="text-red-400 hover:text-red-600 transition-colors">
+                  <Trash2 className="size-4" />
+                </button>
               </div>
-              <button onClick={() => removeMember(m.id!)} className="text-red-400 hover:text-red-600 transition-colors">
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="w-fit">{m.focus}</Badge>
-              <span className="text-sm text-muted-foreground">&nbsp; ­.&nbsp;{m.resting_hr} bpm</span>
-            </div>
-          </Card>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="w-fit">{m.focus}</Badge>
+                <span className="text-sm text-muted-foreground">&nbsp; ­.&nbsp;{m.resting_hr} bpm</span>
+              </div>
+            </Card>
+          </Link>
         ))}
       </div>
 
