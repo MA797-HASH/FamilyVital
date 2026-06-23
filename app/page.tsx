@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { AppShell } from "@/components/app-shell"
 import { StatCard } from "@/components/stat-card"
 import { ActivityChart } from "@/components/activity-chart"
 import { MemberSnapshot } from "@/components/member-snapshot"
@@ -149,8 +148,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <AppShell streak={familyStreak}>
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-medium text-primary">Good morning, {familyName}</p>
@@ -219,6 +217,5 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
-    </AppShell>
   )
 }
