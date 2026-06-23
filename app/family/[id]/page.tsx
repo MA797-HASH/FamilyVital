@@ -1,128 +1,115 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { AppShell } from "@/components/app-shell"
-import { StatCard } from "@/components/stat-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { family, goals, reminders, memberById } from "@/lib/data"
-import { Footprints, Moon, Droplet, Timer, HeartPulse, Smile, ArrowLeft, MessageCircleHeart } from "lucide-react"
+import { createClient } from "@supabase/supabase-js"
 
 export function generateStaticParams() {
-  return family.map((m) => ({ id: m.id }))
+  return []
 }
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+)
 
 export default async function MemberPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const member = memberById(id)
-  if (!member) notFound()
 
-  const memberGoals = goals.filter((g) => g.memberId === id)
-  const memberReminders = reminders.filter((r) => r.memberId === id)
-  const moods = ["", "Rough", "Low", "Okay", "Good", "Great"]
+  // Fetch member info from Supabase
+  const { data: memberRow, error: memberError } = await supabase
+    .from("family_members")
+    .select("id,name,role,age,initials,avatar_color,focus,resting_hr")
+    .eq("id", id)
+    .single()
+
+  if (memberError || !memberRow) {
+    console.error("Erreur récupération membre:", memberError)
+    notFound()
+  }
+
+  // Fetch last 7 days of health_metrics for this member
+  const today = new Date()
+  const sevenDaysAgo = new Date(today)
+  sevenDaysAgo.setDate(today.getDate() - 6)
+  const fromDate = sevenDaysAgo.toISOString().slice(0, 10)
+
+  const { data: metricsData, error: metricsError } = await supabase
+    .from("health_metrics")
+    .select("date, steps, sleep_hours, water_glasses")
+    .eq("family_member_id", id)
+    .gte("date", fromDate)
+    .order("date", { ascending: true })
+
+  if (metricsError) console.error("Erreur récupération metrics:", metricsError)
+
+  // Build an array of last 7 days with defaults
+  const days: { date: string; steps: number; sleep_hours: number; water_glasses: number }[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sevenDaysAgo)
+    d.setDate(sevenDaysAgo.getDate() + i)
+    days.push({ date: d.toISOString().slice(0, 10), steps: 0, sleep_hours: 0, water_glasses: 0 })
+  }
+
+  ;(metricsData ?? []).forEach((row: any) => {
+    const idx = days.findIndex((d) => d.date === String(row.date))
+    if (idx >= 0) {
+      days[idx] = {
+        date: days[idx].date,
+        steps: row.steps ?? 0,
+        sleep_hours: row.sleep_hours ?? 0,
+        water_glasses: row.water_glasses ?? 0,
+      }
+    }
+  })
+
+  // Summary metrics
+  const totalSteps = days.reduce((s, d) => s + d.steps, 0)
+  const avgSleep = days.length ? +(days.reduce((s, d) => s + d.sleep_hours, 0) / days.length).toFixed(1) : 0
+  const totalWater = days.reduce((s, d) => s + d.water_glasses, 0)
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-8">
-        <Button render={<Link href="/family" />} variant="ghost" size="sm" className="mb-4 -ml-2">
-          <ArrowLeft className="size-4" />
-          Back to family
-        </Button>
+      <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ marginBottom: 18 }}>
+          <Link href="/family" style={{ color: "#2563eb", textDecoration: "none" }}>&larr; Back to family</Link>
+        </div>
 
-        <header className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-16">
-              <AvatarFallback style={{ backgroundColor: member.avatarColor }} className="text-xl font-bold text-white">
-                {member.initials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="font-heading text-2xl font-extrabold text-foreground">{member.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                {member.role} · {member.age} years old
-              </p>
-              <Badge variant="secondary" className="mt-2">
-                {member.focus}
-              </Badge>
-            </div>
+        <div style={{ display: "flex", gap: 20, alignItems: "center", background: "#fff", padding: 20, borderRadius: 12, boxShadow: "0 6px 18px rgba(15,23,42,0.06)" }}>
+          <div style={{ width: 88, height: 88, borderRadius: 44, backgroundColor: memberRow.avatar_color || "#888", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 28 }}>
+            {memberRow.initials || (memberRow.name || "").split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
           </div>
-          <Button render={<Link href="/coach" />}>
-            <MessageCircleHeart className="size-5" />
-            Coach for {member.name.split(" ")[0]}
-          </Button>
-        </header>
-
-        <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard icon={Footprints} label="Steps" value={member.metrics.steps.value.toLocaleString()} goal={member.metrics.steps.goal.toLocaleString()} accent="primary" />
-          <StatCard icon={Moon} label="Sleep" value={member.metrics.sleep.value} unit="h" goal={String(member.metrics.sleep.goal)} goalUnit="h" accent="chart-3" />
-          <StatCard icon={Droplet} label="Water" value={member.metrics.water.value} goal={String(member.metrics.water.goal)} goalUnit="glasses" accent="chart-2" />
-          <StatCard icon={Timer} label="Active min" value={member.metrics.activeMinutes.value} goal={String(member.metrics.activeMinutes.goal)} accent="chart-4" />
-        </section>
-
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-heading">Goals</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-5">
-              {memberGoals.length === 0 && <p className="text-sm text-muted-foreground">No goals set yet.</p>}
-              {memberGoals.map((g) => (
-                <div key={g.id} className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground">{g.title}</p>
-                    <span className="text-xs font-medium text-primary">{g.streak} day streak</span>
-                  </div>
-                  <Progress value={g.progress} className="h-2.5" />
-                  <p className="text-xs text-muted-foreground">{g.target}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-heading">Vitals</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                  <HeartPulse className="size-5 text-[oklch(0.55_0.15_30)]" aria-hidden="true" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Resting HR</p>
-                    <p className="font-heading text-lg font-bold">{member.vitals.restingHr} bpm</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                  <Smile className="size-5 text-[oklch(0.6_0.13_80)]" aria-hidden="true" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Weekly mood</p>
-                    <p className="font-heading text-lg font-bold">{moods[member.vitals.weeklyMood]}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-heading">Reminders</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {memberReminders.length === 0 && <p className="text-sm text-muted-foreground">No reminders.</p>}
-                {memberReminders.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{r.title}</p>
-                      <p className="text-xs text-muted-foreground">{r.time} · {r.repeat}</p>
-                    </div>
-                    <Badge variant={r.done ? "secondary" : "default"}>{r.done ? "Done" : r.category}</Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>{memberRow.name}</h1>
+            <p style={{ margin: "6px 0 0", color: "#6b7280" }}>{memberRow.role} · {memberRow.age ?? "-"} years old</p>
+            <div style={{ marginTop: 8, display: "inline-block", background: "#f3f4f6", padding: "6px 10px", borderRadius: 8, color: "#374151", fontWeight: 600 }}>{memberRow.focus}</div>
+          </div>
+          <div style={{ marginLeft: "auto", textAlign: "right" }}>
+            <div style={{ fontSize: 14, color: "#6b7280" }}>Last 7 days</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{totalSteps.toLocaleString()} steps</div>
+            <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>{avgSleep} h avg · {totalWater} glasses</div>
           </div>
         </div>
+
+        <section style={{ marginTop: 20, background: "#fff", padding: 16, borderRadius: 12, boxShadow: "0 6px 18px rgba(15,23,42,0.06)" }}>
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Recent metrics</h2>
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 700 }}>Date</div>
+            <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 700 }}>Steps</div>
+            <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 700 }}>Sleep (h)</div>
+            <div style={{ fontSize: 12, color: "#9ca3af", fontWeight: 700 }}>Water</div>
+          </div>
+
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+            {days.map((d) => (
+              <div key={d.date} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, alignItems: "center", padding: "10px 0", borderTop: "1px solid #f3f4f6" }}>
+                <div style={{ color: "#374151", fontWeight: 600 }}>{d.date}</div>
+                <div style={{ color: "#111827" }}>{d.steps.toLocaleString()}</div>
+                <div style={{ color: "#111827" }}>{d.sleep_hours}</div>
+                <div style={{ color: "#111827" }}>{d.water_glasses}</div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </AppShell>
   )
