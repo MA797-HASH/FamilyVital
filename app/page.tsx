@@ -149,6 +149,25 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1.5rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+          <Link href="/" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
+            Dashboard
+          </Link>
+          <Link href="/family" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
+            Family
+          </Link>
+          <Link href="/reminders" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
+            Reminders
+          </Link>
+          <Link href="/metrics" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
+            Métriques
+          </Link>
+          <Link href="/coach" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
+            AI Coach
+          </Link>
+        </div>
+      </div>
         <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-medium text-primary">Good morning, {familyName}</p>
