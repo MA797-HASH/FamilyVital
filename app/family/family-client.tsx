@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2 } from "lucide-react";
@@ -8,20 +9,20 @@ import type { User, FamilyMember } from "@/lib/auth";
 const COLORS = ["#1E5C3A", "#2E7D52", "#D4872B", "#6B4C9A", "#2C7BB6", "#C0392B"];
 const ROLES = ["Parent", "Enfant", "Grand-parent", "Autre"];
 
-const pageStyle = {
+const pageStyle: CSSProperties = {
   width: "100%",
   maxWidth: "980px",
   margin: "0 auto",
 };
 
-const headerStyle = {
+const headerStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: "1rem",
   marginBottom: "1.75rem",
 };
 
-const headerTitleStyle = {
+const headerTitleStyle: CSSProperties = {
   margin: 0,
   fontSize: "2.4rem",
   fontWeight: 800,
@@ -29,7 +30,7 @@ const headerTitleStyle = {
   lineHeight: 1.05,
 };
 
-const headerTextStyle = {
+const headerTextStyle: CSSProperties = {
   margin: 0,
   color: "#475569",
   fontSize: "1rem",
@@ -37,7 +38,7 @@ const headerTextStyle = {
   maxWidth: "760px",
 };
 
-const actionButtonStyle = {
+const actionButtonStyle: CSSProperties = {
   backgroundColor: "#2563eb",
   color: "#ffffff",
   border: "none",
@@ -49,13 +50,13 @@ const actionButtonStyle = {
   boxShadow: "0 16px 32px rgba(37, 99, 235, 0.18)",
 };
 
-const memberGridStyle = {
+const memberGridStyle: CSSProperties = {
   display: "grid",
   gap: "1rem",
   gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
 };
 
-const memberCardStyle = {
+const memberCardStyle: CSSProperties = {
   backgroundColor: "#ffffff",
   borderRadius: "24px",
   border: "1px solid rgba(148, 163, 184, 0.16)",
@@ -68,13 +69,13 @@ const memberCardStyle = {
   color: "inherit",
 };
 
-const cardHeaderStyle = {
+const cardHeaderStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: "1rem",
 };
 
-const avatarStyle = {
+const avatarStyle: CSSProperties = {
   width: "56px",
   height: "56px",
   borderRadius: "999px",
@@ -93,28 +94,28 @@ const memberNameStyle = {
   color: "#0f172a",
 };
 
-const memberMetaStyle = {
+const memberMetaStyle: CSSProperties = {
   margin: "0.35rem 0 0",
   color: "#64748b",
   fontSize: "0.95rem",
   lineHeight: 1.5,
 };
 
-const badgeBaseStyle = {
+const badgeBaseStyle: CSSProperties = {
   borderRadius: "999px",
   padding: "0.5rem 0.85rem",
   fontSize: "0.85rem",
   fontWeight: 700,
 };
 
-const roleBadgeStyles = {
+const roleBadgeStyles: Record<string, CSSProperties> = {
   Parent: { backgroundColor: "#eff6ff", color: "#2563eb" },
   Enfant: { backgroundColor: "#e0f2fe", color: "#0369a1" },
   "Grand-parent": { backgroundColor: "#fef3c7", color: "#b45309" },
   Autre: { backgroundColor: "#ede9fe", color: "#7c3aed" },
 };
 
-const formCardStyle = {
+const formCardStyle: CSSProperties = {
   backgroundColor: "#ffffff",
   borderRadius: "28px",
   border: "1px solid rgba(148, 163, 184, 0.16)",
@@ -123,13 +124,13 @@ const formCardStyle = {
   marginTop: "1.5rem",
 };
 
-const formRowStyle = {
+const formRowStyle: CSSProperties = {
   display: "grid",
   gap: "1rem",
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
 };
 
-const labelStyle = {
+const labelStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: "0.5rem",
@@ -138,7 +139,14 @@ const labelStyle = {
   fontSize: "0.95rem",
 };
 
-const inputStyle = {
+const sectionTextStyle: CSSProperties = {
+  marginTop: "0.65rem",
+  color: "#475569",
+  fontSize: "1rem",
+  lineHeight: 1.75,
+};
+
+const inputStyle: CSSProperties = {
   width: "100%",
   borderRadius: "1rem",
   border: "1px solid #e2e8f0",
@@ -148,19 +156,19 @@ const inputStyle = {
   backgroundColor: "#ffffff",
 };
 
-const smallInputStyle = {
+const smallInputStyle: CSSProperties = {
   ...inputStyle,
   width: "100%",
 };
 
-const errorTextStyle = {
+const errorTextStyle: CSSProperties = {
   margin: 0,
   color: "#ef4444",
   fontSize: "0.95rem",
   fontWeight: 600,
 };
 
-const addButtonStyle = {
+const addButtonStyle: CSSProperties = {
   ...actionButtonStyle,
   width: "auto",
   alignSelf: "center",
