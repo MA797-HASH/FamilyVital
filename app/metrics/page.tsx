@@ -84,172 +84,233 @@ export default function MetricsPage() {
     }
   };
 
+  const pageStyle = {
+    minHeight: "100vh",
+    backgroundColor: "#f8fafc",
+    padding: "2rem 1rem",
+  };
+
+  const containerStyle = {
+    maxWidth: "960px",
+    margin: "0 auto",
+  };
+
+  const heroCardStyle = {
+    backgroundColor: "#ffffff",
+    borderRadius: "28px",
+    border: "1px solid rgba(148, 163, 184, 0.16)",
+    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+    padding: "2rem",
+    marginBottom: "1.5rem",
+  };
+
+  const formCardStyle = {
+    backgroundColor: "#ffffff",
+    borderRadius: "28px",
+    border: "1px solid rgba(148, 163, 184, 0.16)",
+    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+    padding: "2rem",
+  };
+
+  const labelStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.6rem",
+    color: "#334155",
+    fontWeight: 600,
+  };
+
+  const inputStyle = {
+    width: "100%",
+    borderRadius: "1rem",
+    border: "1px solid #e2e8f0",
+    padding: "0.95rem 1rem",
+    fontSize: "1rem",
+    color: "#0f172a",
+    backgroundColor: "#ffffff",
+  };
+
+  const primaryButtonStyle = {
+    width: "100%",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "1rem",
+    padding: "1rem 1.1rem",
+    fontSize: "1rem",
+    fontWeight: 700,
+    cursor: saving ? "not-allowed" : "pointer",
+    opacity: saving ? 0.8 : 1,
+    boxShadow: "0 16px 32px rgba(37, 99, 235, 0.18)",
+  };
+
+  const summaryGridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "1rem",
+    marginTop: "1.5rem",
+  };
+
+  const summaryCardStyle = {
+    borderRadius: "22px",
+    padding: "1.4rem",
+    color: "#ffffff",
+    minHeight: "140px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    boxShadow: "0 16px 32px rgba(15, 23, 42, 0.12)",
+  };
+
+  const summaryLabelStyle = {
+    fontSize: "0.95rem",
+    opacity: 0.92,
+  };
+
+  const summaryValueStyle = {
+    fontSize: "2rem",
+    fontWeight: 800,
+    marginTop: "0.7rem",
+    lineHeight: 1,
+  };
+
+  const summaryTextStyle = {
+    color: "#475569",
+    marginTop: "0.75rem",
+    lineHeight: 1.7,
+    fontSize: "1rem",
+  };
+
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "2rem",
-          backgroundColor: "#f3f4f6",
-        }}
-      >
+      <div style={pageStyle}>
         <div
           style={{
             width: "100%",
-            maxWidth: "560px",
+            maxWidth: "680px",
+            margin: "0 auto",
             backgroundColor: "#ffffff",
-            borderRadius: "1rem",
+            borderRadius: "1.5rem",
+            border: "1px solid rgba(148, 163, 184, 0.16)",
+            boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
             padding: "2rem",
-            boxShadow: "0 10px 24px rgba(0, 0, 0, 0.08)",
           }}
         >
-          Chargement des membres de la famille...
+          <p style={{ margin: 0, color: "#334155", fontSize: "1rem" }}>Chargement des membres de la famille...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f3f4f6",
-        padding: "2rem",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "680px",
-          margin: "0 auto",
-          backgroundColor: "#ffffff",
-          borderRadius: "1.25rem",
-          boxShadow: "0 16px 40px rgba(15, 23, 42, 0.08)",
-          padding: "2rem",
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 700, color: "#111827" }}>
-          Enregistrer les métriques du jour
-        </h1>
-        <p style={{ marginTop: "0.75rem", color: "#4b5563", lineHeight: 1.7 }}>
-          Sélectionnez un membre de la famille, indiquez le nombre de pas, les heures de sommeil et le nombre de verres d'eau pour aujourd'hui.
-        </p>
+    <div style={pageStyle}>
+      <div style={containerStyle}>
+        <div style={heroCardStyle}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div>
+              <p style={{ margin: 0, color: "#2563eb", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", fontSize: "0.85rem" }}>
+                Daily metrics
+              </p>
+              <h1 style={{ margin: "0.6rem 0 0", fontSize: "2.45rem", fontWeight: 800, color: "#0f172a", lineHeight: 1.05 }}>
+                Report health progress for your family
+              </h1>
+              <p style={summaryTextStyle}>
+                Log steps, sleep, and water intake for each family member. Keep the day organized with quick targets and a clean tracking experience.
+              </p>
+            </div>
 
-        <div
-          style={{
-            marginTop: "1.75rem",
-            display: "grid",
-            gap: "1rem",
-          }}
-        >
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#374151", fontWeight: 600 }}>
-            Membre
-            <select
-              value={selectedMemberId}
-              onChange={(event) => setSelectedMemberId(event.target.value)}
-              style={{
-                width: "100%",
-                minHeight: "3rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                padding: "0.75rem 0.9rem",
-                fontSize: "1rem",
-                backgroundColor: "#ffffff",
-              }}
-            >
-              {familyMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            <div style={summaryGridStyle}>
+              <div style={{ ...summaryCardStyle, background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)" }}>
+                <div style={summaryLabelStyle}>Steps goal</div>
+                <div style={summaryValueStyle}>10,000</div>
+                <div style={{ fontSize: "0.92rem", opacity: 0.85 }}>A daily activity target for the family.</div>
+              </div>
+              <div style={{ ...summaryCardStyle, background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" }}>
+                <div style={summaryLabelStyle}>Sleep target</div>
+                <div style={summaryValueStyle}>8h</div>
+                <div style={{ fontSize: "0.92rem", opacity: 0.85 }}>Standard healthy sleep goal per night.</div>
+              </div>
+              <div style={{ ...summaryCardStyle, background: "linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)" }}>
+                <div style={summaryLabelStyle}>Water target</div>
+                <div style={summaryValueStyle}>8+</div>
+                <div style={{ fontSize: "0.92rem", opacity: 0.85 }}>Daily hydration goal in glasses.</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#374151", fontWeight: 600 }}>
-            Pas aujourd'hui
-            <input
-              type="number"
-              min="0"
-              step="1"
-              placeholder="Ex: 8500"
-              value={steps}
-              onChange={(event) => setSteps(event.target.value)}
-              style={{
-                width: "100%",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                padding: "0.75rem 0.9rem",
-                fontSize: "1rem",
-              }}
-            />
-          </label>
-
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#374151", fontWeight: 600 }}>
-            Heures de sommeil
-            <input
-              type="number"
-              min="0"
-              step="0.25"
-              placeholder="Ex: 7.5"
-              value={sleepHours}
-              onChange={(event) => setSleepHours(event.target.value)}
-              style={{
-                width: "100%",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                padding: "0.75rem 0.9rem",
-                fontSize: "1rem",
-              }}
-            />
-          </label>
-
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.5rem", color: "#374151", fontWeight: 600 }}>
-            Verres d'eau
-            <input
-              type="number"
-              min="0"
-              step="1"
-              placeholder="Ex: 8"
-              value={waterGlasses}
-              onChange={(event) => setWaterGlasses(event.target.value)}
-              style={{
-                width: "100%",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                padding: "0.75rem 0.9rem",
-                fontSize: "1rem",
-              }}
-            />
-          </label>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            style={{
-              width: "100%",
-              backgroundColor: "#2563eb",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "0.9rem",
-              padding: "0.95rem 1rem",
-              fontSize: "1rem",
-              fontWeight: 700,
-              cursor: saving ? "not-allowed" : "pointer",
-              opacity: saving ? 0.75 : 1,
-              marginTop: "0.5rem",
-            }}
-          >
-            {saving ? "Enregistrement..." : "Enregistrer les métriques"}
-          </button>
-
-          {message ? (
-            <p style={{ color: message.includes("succès") ? "#047857" : "#b91c1c", fontWeight: 600 }}>
-              {message}
+        <div style={formCardStyle}>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <h2 style={{ margin: 0, fontSize: "1.45rem", fontWeight: 800, color: "#0f172a" }}>
+              Add today's metrics
+            </h2>
+            <p style={{ marginTop: "0.5rem", color: "#475569", fontSize: "1rem", lineHeight: 1.7 }}>
+              Choose a family member and enter their daily activity values. This form saves progress straight to the health metrics database.
             </p>
-          ) : null}
+          </div>
+
+          <div style={{ display: "grid", gap: "1rem" }}>
+            <label style={labelStyle}>
+              Membre
+              <select value={selectedMemberId} onChange={(event) => setSelectedMemberId(event.target.value)} style={inputStyle}>
+                {familyMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+              <label style={labelStyle}>
+                Pas aujourd'hui
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Ex: 8500"
+                  value={steps}
+                  onChange={(event) => setSteps(event.target.value)}
+                  style={inputStyle}
+                />
+              </label>
+              <label style={labelStyle}>
+                Heures de sommeil
+                <input
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  placeholder="Ex: 7.5"
+                  value={sleepHours}
+                  onChange={(event) => setSleepHours(event.target.value)}
+                  style={inputStyle}
+                />
+              </label>
+            </div>
+
+            <label style={labelStyle}>
+              Verres d'eau
+              <input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Ex: 8"
+                value={waterGlasses}
+                onChange={(event) => setWaterGlasses(event.target.value)}
+                style={inputStyle}
+              />
+            </label>
+
+            <button type="button" onClick={handleSave} disabled={saving} style={primaryButtonStyle}>
+              {saving ? "Enregistrement..." : "Enregistrer les métriques"}
+            </button>
+
+            {message ? (
+              <p style={{ color: message.includes("succès") ? "#047857" : "#b91c1c", fontWeight: 600, margin: 0 }}>
+                {message}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
