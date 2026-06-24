@@ -143,57 +143,176 @@ export default function DashboardPage() {
     : 0
   const upcoming = reminders.filter((r) => !r.done).slice(0, 4)
 
+  const pageStyle = {
+    backgroundColor: "#f8fafc",
+    minHeight: "100vh",
+    padding: "2rem 0",
+  }
+
+  const contentStyle = {
+    width: "100%",
+    maxWidth: "1120px",
+    margin: "0 auto",
+    padding: "0 1rem",
+  }
+
+  const sectionCardStyle = {
+    backgroundColor: "#ffffff",
+    borderRadius: "24px",
+    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.12)",
+    border: "1px solid rgba(148, 163, 184, 0.12)",
+    padding: "1.75rem",
+  }
+
+  const statsGridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "1rem",
+    marginTop: "1.5rem",
+  }
+
+  const statCardBase = {
+    borderRadius: "24px",
+    padding: "1.5rem",
+    color: "#ffffff",
+    minHeight: "150px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
+  }
+
+  const statAccent = {
+    steps: { background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)" },
+    sleep: { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" },
+    water: { background: "linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)" },
+    hr: { background: "linear-gradient(135deg, #ec4899 0%, #fb7185 100%)" },
+  }
+
+  const statLabelStyle = {
+    opacity: 0.9,
+    fontSize: "0.95rem",
+    letterSpacing: "0.01em",
+  }
+
+  const statValueStyle = {
+    fontSize: "2.5rem",
+    fontWeight: 700,
+    marginTop: "0.75rem",
+    lineHeight: 1,
+  }
+
+  const statMetaStyle = {
+    opacity: 0.88,
+    fontSize: "0.95rem",
+    marginTop: "1rem",
+  }
+
   if (loading) {
     return <div className="p-6">Chargement...</div>
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1.5rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-          <Link href="/" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
-            Dashboard
-          </Link>
-          <Link href="/family" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
-            Family
-          </Link>
-          <Link href="/reminders" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
-            Reminders
-          </Link>
-          <Link href="/metrics" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
-            Métriques
-          </Link>
-          <Link href="/coach" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.5rem 0.75rem", borderRadius: "0.75rem" }}>
-            AI Coach
-          </Link>
+    <div style={pageStyle}>
+      <div style={contentStyle}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+            marginBottom: "1.5rem",
+            padding: "1rem 1.25rem",
+            borderRadius: "24px",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+            border: "1px solid rgba(148, 163, 184, 0.12)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+            <Link href="/" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
+              Dashboard
+            </Link>
+            <Link href="/family" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
+              Family
+            </Link>
+            <Link href="/reminders" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
+              Reminders
+            </Link>
+            <Link href="/metrics" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
+              Métriques
+            </Link>
+            <Link href="/coach" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
+              AI Coach
+            </Link>
+          </div>
         </div>
-      </div>
-        <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+
+        <header style={{ ...sectionCardStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <p className="text-sm font-medium text-primary">Good morning, {familyName}</p>
-            <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground text-balance">
+            <p style={{ color: "#2563eb", fontWeight: 700, marginBottom: "0.5rem" }}>Good morning, {familyName}</p>
+            <h1 style={{ fontSize: "2.6rem", lineHeight: 1.05, fontWeight: 800, color: "#111827", margin: 0 }}>
               Your family is thriving today
             </h1>
-            <p className="mt-1 text-muted-foreground">Here&apos;s how everyone is doing across their health goals.</p>
+            <p style={{ marginTop: "0.9rem", color: "#475569", fontSize: "1.05rem", maxWidth: "680px" }}>
+              Here&apos;s how everyone is doing across their health goals.
+            </p>
           </div>
-          <Button render={<Link href="/coach" />} size="lg">
-            <MessageCircleHeart className="size-5" />
-            Ask your coach
-          </Button>
+          <div style={{ display: "flex", justifyContent: "flex-start" }}>
+            <Button render={<Link href="/coach" />} size="lg">
+              <MessageCircleHeart className="size-5" />
+              Ask your coach
+            </Button>
+          </div>
         </header>
 
-        <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard icon={Footprints} label="Family steps today" value={totalSteps.toLocaleString()} accent="primary" />
-          <StatCard icon={Moon} label="Avg sleep" value={avgSleep} unit="h" accent="chart-3" />
-          <StatCard icon={Droplet} label="Glasses of water" value={totalWater} accent="chart-2" />
-          <StatCard icon={HeartPulse} label="Avg resting HR" value={avgHr} unit="bpm" accent="chart-4" />
+        <section style={statsGridStyle}>
+          <div style={{ ...statCardBase, ...statAccent.steps }}>
+            <div>
+              <div style={statLabelStyle}>Family steps today</div>
+              <div style={statValueStyle}>{totalSteps.toLocaleString()}</div>
+            </div>
+            <div style={statMetaStyle}>Goal: 10,000 steps</div>
+          </div>
+
+          <div style={{ ...statCardBase, ...statAccent.sleep }}>
+            <div>
+              <div style={statLabelStyle}>Avg sleep</div>
+              <div style={statValueStyle}>{avgSleep}h</div>
+            </div>
+            <div style={statMetaStyle}>Target: 8 hours per night</div>
+          </div>
+
+          <div style={{ ...statCardBase, ...statAccent.water }}>
+            <div>
+              <div style={statLabelStyle}>Glasses of water</div>
+              <div style={statValueStyle}>{totalWater}</div>
+            </div>
+            <div style={statMetaStyle}>Hydration goal: 8 glasses</div>
+          </div>
+
+          <div style={{ ...statCardBase, ...statAccent.hr }}>
+            <div>
+              <div style={statLabelStyle}>Avg resting HR</div>
+              <div style={statValueStyle}>{avgHr} bpm</div>
+            </div>
+            <div style={statMetaStyle}>Family wellness score</div>
+          </div>
         </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <section style={{ marginTop: "1.5rem", display: "grid", gap: "1rem", gridTemplateColumns: "1.7fr 1fr" }}>
+          <div style={{ ...sectionCardStyle, minHeight: "430px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#111827" }}>Activity overview</h2>
+                <p style={{ marginTop: "0.5rem", color: "#64748b", fontSize: "0.95rem" }}>Daily family movement and trends.</p>
+              </div>
+            </div>
             <ActivityChart />
           </div>
-          <Card>
+
+          <Card style={{ ...sectionCardStyle, padding: "1.5rem" }}>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-heading">
                 <Bell className="size-5 text-primary" />
@@ -207,10 +326,22 @@ export default function DashboardPage() {
               {upcoming.map((r) => {
                 const m = memberById(r.memberId)
                 return (
-                  <div key={r.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-foreground">{r.title}</p>
-                      <p className="text-xs text-muted-foreground">
+                  <div
+                    key={r.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "1rem",
+                      borderRadius: "18px",
+                      padding: "1rem",
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid rgba(148, 163, 184, 0.16)",
+                    }}
+                  >
+                    <div>
+                      <p style={{ margin: 0, fontSize: "0.98rem", fontWeight: 700, color: "#0f172a" }}>{r.title}</p>
+                      <p style={{ marginTop: "0.4rem", color: "#64748b", fontSize: "0.9rem" }}>
                         {m?.name.split(" ")[0]} · {r.time}
                       </p>
                     </div>
@@ -222,9 +353,9 @@ export default function DashboardPage() {
           </Card>
         </section>
 
-        <section className="mt-8">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-heading text-xl font-bold text-foreground">Family snapshot</h2>
+        <section style={{ marginTop: "1.75rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 700, color: "#111827" }}>Family snapshot</h2>
             <Button render={<Link href="/family" />} variant="ghost" size="sm">
               View profiles <ArrowRight className="size-4" />
             </Button>
@@ -236,5 +367,6 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
+    </div>
   )
 }
