@@ -108,33 +108,65 @@ export default function RemindersPage() {
   };
 
   const containerStyle = {
-    maxWidth: "960px",
+    maxWidth: "980px",
     margin: "0 auto",
     padding: "0 0.5rem",
   };
 
   const headerStyle = {
-    marginBottom: "1.5rem",
+    marginBottom: "1.75rem",
     color: "#0f172a",
   };
 
-  const panelStyle = {
+  const heroStyle = {
     backgroundColor: "#ffffff",
     borderRadius: "28px",
-    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
     border: "1px solid rgba(148, 163, 184, 0.16)",
-    padding: "1.75rem",
+    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+    padding: "2rem",
     marginBottom: "1.5rem",
+  };
+
+  const formCardStyle = {
+    backgroundColor: "#ffffff",
+    borderRadius: "28px",
+    border: "1px solid rgba(148, 163, 184, 0.16)",
+    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+    padding: "2rem",
+    marginBottom: "1.5rem",
+  };
+
+  const sectionTitleStyle = {
+    margin: 0,
+    fontSize: "1.4rem",
+    fontWeight: 800,
+    color: "#0f172a",
+  };
+
+  const sectionTextStyle = {
+    marginTop: "0.65rem",
+    color: "#475569",
+    fontSize: "1rem",
+    lineHeight: 1.75,
   };
 
   const inputStyle = {
     width: "100%",
     border: "1px solid #e2e8f0",
-    borderRadius: "0.9rem",
+    borderRadius: "1rem",
     padding: "0.95rem 1rem",
-    fontSize: "0.96rem",
+    fontSize: "1rem",
     color: "#0f172a",
     backgroundColor: "#ffffff",
+  };
+
+  const labelStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+    color: "#334155",
+    fontWeight: 700,
+    fontSize: "0.95rem",
   };
 
   const primaryButtonStyle = {
@@ -142,23 +174,43 @@ export default function RemindersPage() {
     backgroundColor: "#2563eb",
     color: "#ffffff",
     border: "none",
-    borderRadius: "0.9rem",
-    padding: "0.95rem 1rem",
+    borderRadius: "1rem",
+    padding: "1rem 1.1rem",
     fontSize: "1rem",
     fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 12px 24px rgba(37, 99, 235, 0.18)",
+    boxShadow: "0 16px 32px rgba(37, 99, 235, 0.18)",
+  };
+
+  const reminderGridStyle = {
+    display: "grid",
+    gap: "1rem",
   };
 
   const reminderCardStyle = {
     backgroundColor: "#ffffff",
-    borderRadius: "1.5rem",
+    borderRadius: "24px",
     boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
     border: "1px solid rgba(148, 163, 184, 0.16)",
-    padding: "1.25rem",
-    display: "flex",
-    alignItems: "center",
+    padding: "1.35rem",
+    display: "grid",
+    gridTemplateColumns: "minmax(170px, 210px) 1fr auto",
     gap: "1rem",
+    alignItems: "center",
+  };
+
+  const reminderTitleStyle = {
+    margin: 0,
+    fontSize: "1rem",
+    fontWeight: 700,
+    color: "#0f172a",
+  };
+
+  const reminderMetaStyle = {
+    marginTop: "0.45rem",
+    fontSize: "0.95rem",
+    color: "#64748b",
+    lineHeight: 1.5,
   };
 
   const badgeStyle = {
@@ -191,47 +243,67 @@ export default function RemindersPage() {
       <div style={containerStyle}>
         <div style={headerStyle}>
           <h1 style={{ fontSize: "2.2rem", fontWeight: 800, margin: 0 }}>Reminders & Goals</h1>
-          <p style={{ marginTop: "0.75rem", color: "#475569", fontSize: "1rem", maxWidth: "720px" }}>
+          <p style={{ marginTop: "0.75rem", color: "#475569", fontSize: "1rem", maxWidth: "780px" }}>
             Keep your family on track with clean reminders, goals, and daily habits.
           </p>
         </div>
 
-        <div style={panelStyle}>
-          <div style={{ marginBottom: "1.25rem" }}>
-            <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#0f172a" }}>Add a new reminder</h2>
-            <p style={{ marginTop: "0.5rem", color: "#64748b", fontSize: "0.95rem" }}>
-              Create a task for your family’s health routine with a time, repetition, and category.
+        <div style={heroStyle}>
+          <p style={{ margin: 0, color: "#2563eb", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", fontSize: "0.85rem" }}>
+            Health routine
+          </p>
+          <h2 style={{ margin: "0.75rem 0 0", fontSize: "2rem", fontWeight: 800, color: "#0f172a", lineHeight: 1.05 }}>
+            Manage reminders with a modern health dashboard feel.
+          </h2>
+          <p style={sectionTextStyle}>
+            Add new tasks, schedule reminders, and stay organized with crisp cards, shadows, and consistent spacing.
+          </p>
+        </div>
+
+        <div style={formCardStyle}>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <h3 style={sectionTitleStyle}>Add a new reminder</h3>
+            <p style={sectionTextStyle}>
+              Fill out the form and save reminders for your family’s wellness routine.
             </p>
           </div>
 
           <div style={{ display: "grid", gap: "1rem" }}>
-            <input
-              style={inputStyle}
-              placeholder="Titre (ex: Prendre médicament)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <label style={labelStyle}>
+              Titre
+              <input
+                style={inputStyle}
+                placeholder="Titre (ex: Prendre médicament)"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </label>
 
-            <input
-              type="time"
-              style={inputStyle}
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
+            <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+              <label style={labelStyle}>
+                Heure
+                <input type="time" style={inputStyle} value={time} onChange={(e) => setTime(e.target.value)} />
+              </label>
+              <label style={labelStyle}>
+                Répétition
+                <select style={inputStyle} value={repeat} onChange={(e) => setRepeat(e.target.value)}>
+                  <option value="none">Pas de répétition</option>
+                  <option value="daily">Quotidien</option>
+                  <option value="weekly">Hebdomadaire</option>
+                </select>
+              </label>
+            </div>
 
-            <select style={inputStyle} value={repeat} onChange={(e) => setRepeat(e.target.value)}>
-              <option value="none">Pas de répétition</option>
-              <option value="daily">Quotidien</option>
-              <option value="weekly">Hebdomadaire</option>
-            </select>
-
-            <select style={inputStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="general">Général</option>
-              <option value="medication">Médicament</option>
-              <option value="exercise">Exercice</option>
-              <option value="nutrition">Nutrition</option>
-              <option value="appointment">Rendez-vous</option>
-            </select>
+            <label style={labelStyle}>
+              Catégorie
+              <select style={inputStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="general">Général</option>
+                <option value="medication">Médicament</option>
+                <option value="exercise">Exercice</option>
+                <option value="nutrition">Nutrition</option>
+                <option value="appointment">Rendez-vous</option>
+              </select>
+            </label>
 
             <button onClick={handleAdd} style={primaryButtonStyle}>
               Ajouter
@@ -239,64 +311,65 @@ export default function RemindersPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: "1rem" }}>
+        <div style={reminderGridStyle}>
           {reminders.length === 0 ? (
-            <div style={{ ...panelStyle, textAlign: "center" }}>
+            <div style={{ ...heroStyle, textAlign: "center" }}>
               <p style={{ margin: 0, color: "#64748b", fontSize: "1rem" }}>Aucun reminder pour l'instant.</p>
             </div>
           ) : (
             reminders.map((r) => (
               <div key={r.id} style={{ ...reminderCardStyle, opacity: r.done ? 0.65 : 1 }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "0.85rem", minWidth: "170px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
                   <input
                     type="checkbox"
                     checked={r.done}
                     onChange={() => handleToggle(r.id, r.done)}
                     style={{ width: "1.1rem", height: "1.1rem", accentColor: "#2563eb", cursor: "pointer" }}
                   />
-                  <span style={{ fontSize: "0.95rem", color: "#334155", fontWeight: 600 }}>
-                    {r.time || "Any time"}
-                  </span>
-                </label>
+                  <div>
+                    <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "#334155" }}>
+                      {r.time || "Any time"}
+                    </p>
+                    <p style={{ margin: "0.35rem 0 0", fontSize: "0.85rem", color: "#64748b" }}>
+                      {r.repeat !== "none" ? `${r.repeat} · ` : ""}
+                      {formatCategory(r.category)}
+                    </p>
+                  </div>
+                </div>
 
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: "#0f172a", textDecoration: r.done ? "line-through" : "none" }}>
-                    {r.title}
-                  </p>
-                  <p style={{ marginTop: "0.45rem", fontSize: "0.95rem", color: "#64748b" }}>
-                    {r.repeat !== "none" ? `${r.repeat} · ` : ""}
+                <div>
+                  <p style={{ ...reminderTitleStyle, textDecoration: r.done ? "line-through" : "none" }}>{r.title}</p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.75rem" }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "999px",
+                      padding: "0.5rem 0.85rem",
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                      ...badgeStyle[r.category as keyof typeof badgeStyle],
+                    }}
+                  >
                     {formatCategory(r.category)}
-                  </p>
+                  </span>
+                  <button
+                    onClick={() => handleDelete(r.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#ef4444",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    Supprimer
+                  </button>
                 </div>
-
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "999px",
-                    padding: "0.45rem 0.75rem",
-                    fontSize: "0.85rem",
-                    fontWeight: 700,
-                    ...badgeStyle[r.category as keyof typeof badgeStyle],
-                  }}
-                >
-                  {formatCategory(r.category)}
-                </div>
-
-                <button
-                  onClick={() => handleDelete(r.id)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#ef4444",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  Supprimer
-                </button>
               </div>
             ))
           )}
