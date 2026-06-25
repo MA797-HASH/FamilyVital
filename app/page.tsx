@@ -50,7 +50,11 @@ export default function DashboardPage() {
         return
       }
 
-      const authenticatedName = userData.user.user_metadata?.full_name || userData.user.email || ""
+      const email = userData.user.email || ""
+      const authenticatedName =
+        userData.user.user_metadata?.full_name ||
+        (email.includes("@") ? email.split("@")[0] : email) ||
+        ""
       setUserName(authenticatedName)
 
       const loadData = async () => {
