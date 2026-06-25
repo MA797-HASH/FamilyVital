@@ -1,84 +1,295 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@supabase/supabase-js"
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+const pageStyle = {
+  minHeight: "100vh",
+  width: "100%",
+  padding: "2rem 1rem",
+  backgroundColor: "#f8fafc",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+}
+
+const cardStyle = {
+  width: "100%",
+  maxWidth: "480px",
+  backgroundColor: "#ffffff",
+  borderRadius: "28px",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+  boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+  overflow: "hidden",
+}
+
+const headerStyle = {
+  padding: "2rem 2rem 1.5rem",
+  borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
+}
+
+const headerTitleStyle = {
+  margin: 0,
+  fontSize: "2rem",
+  fontWeight: 800,
+  color: "#111827",
+}
+
+const headerSubtitleStyle = {
+  margin: "0.75rem 0 0",
+  color: "#64748b",
+  fontSize: "1rem",
+  lineHeight: 1.7,
+}
+
+const tabBarStyle = {
+  display: "flex",
+  borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
+}
+
+const tabStyle = {
+  flex: 1,
+  padding: "1rem 1.25rem",
+  cursor: "pointer",
+  backgroundColor: "transparent",
+  border: "none",
+  fontSize: "1rem",
+  fontWeight: 700,
+  color: "#64748b",
+}
+
+const tabActiveStyle = {
+  color: "#111827",
+  borderBottom: "3px solid #2563eb",
+  backgroundColor: "#ffffff",
+}
+
+const contentStyle = {
+  padding: "1.75rem 2rem 2rem",
+  display: "flex",
+  flexDirection: "column",
+  gap: "1rem",
+}
+
+const labelStyle = {
+  display: "block",
+  marginBottom: "0.5rem",
+  color: "#475569",
+  fontSize: "0.95rem",
+  fontWeight: 700,
+}
+
+const inputStyle = {
+  width: "100%",
+  borderRadius: "1rem",
+  border: "1px solid rgba(148, 163, 184, 0.3)",
+  padding: "0.95rem 1rem",
+  fontSize: "1rem",
+  color: "#0f172a",
+  backgroundColor: "#ffffff",
+  outline: "none",
+}
+
+const buttonStyle = {
+  width: "100%",
+  borderRadius: "1rem",
+  border: "none",
+  padding: "1rem 1.1rem",
+  fontSize: "1rem",
+  fontWeight: 700,
+  color: "#ffffff",
+  backgroundColor: "#2563eb",
+  cursor: "pointer",
+}
+
+const errorStyle = {
+  color: "#b91c1c",
+  backgroundColor: "#fee2e2",
+  borderRadius: "1rem",
+  padding: "0.95rem 1rem",
+  fontSize: "0.95rem",
+}
+
+const hintStyle = {
+  marginTop: "0.25rem",
+  color: "#64748b",
+  fontSize: "0.92rem",
+}
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [familyName, setFamilyName] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const [mode, setMode] = useState<"login" | "signup">("login")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPw, setConfirmPw] = useState("")
+  const [familyName, setFamilyName] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handle = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: mode, email, password, familyName }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error); setLoading(false); return; }
-      router.push("/family");
-    } catch {
-      setError("Erreur réseau.");
-      setLoading(false);
+  const handle = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+
+    if (!email || !password || (mode === "signup" && (!familyName || !confirmPw))) {
+      setError("Please fill in all required fields.")
+      return
     }
-  };
+
+    if (mode === "signup" && password !== confirmPw) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    setLoading(true)
+
+    if (mode === "login") {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      setLoading(false)
+      if (authError) {
+        setError(authError.message)
+        return
+      }
+
+      router.push("/")
+      return
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+
+    setLoading(false)
+    if (signUpError) {
+      setError(signUpError.message)
+      return
+    }
+
+    router.push("/")
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-extrabold text-green-800 text-center mb-1">🌿 FamilyVital</h1>
-        <p className="text-center text-green-600 text-sm mb-8 uppercase tracking-wider font-medium">
-          La santé de votre famille
-        </p>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">
-            ⚠ {error}
-          </div>
-        )}
-
-        {mode === "signup" && (
-          <div className="mb-4">
-            <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Nom de famille</label>
-            <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 bg-green-50" value={familyName} onChange={e => setFamilyName(e.target.value)} placeholder="ex: Famille Berrahmani" />
-          </div>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Email</label>
-          <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 bg-green-50" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="vous@exemple.com" />
+    <div style={pageStyle}>
+      <div style={cardStyle}>
+        <div style={headerStyle}>
+          <h1 style={headerTitleStyle}>FamilyVital</h1>
+          <p style={headerSubtitleStyle}>
+            {mode === "login"
+              ? "Sign in to manage your family health dashboard."
+              : "Create a new account so your family can stay on track."}
+          </p>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Mot de passe</label>
-          <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 bg-green-50" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+        <div style={tabBarStyle}>
+          <button
+            type="button"
+            onClick={() => { setMode("login"); setError(null) }}
+            style={{
+              ...tabStyle,
+              ...(mode === "login" ? tabActiveStyle : {}),
+            }}
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMode("signup"); setError(null) }}
+            style={{
+              ...tabStyle,
+              ...(mode === "signup" ? tabActiveStyle : {}),
+            }}
+          >
+            Sign Up
+          </button>
         </div>
 
-        {mode === "signup" && (
-          <div className="mb-4">
-            <label className="block text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Confirmer le mot de passe</label>
-            <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 bg-green-50" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="••••••••" />
+        <form style={contentStyle} onSubmit={handle}>
+          {error && <div style={errorStyle}>{error}</div>}
+
+          <div>
+            <label style={labelStyle} htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={inputStyle}
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
           </div>
-        )}
 
-        <button onClick={handle} disabled={loading} className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-xl mt-2 transition-colors disabled:opacity-60">
-          {loading ? "..." : mode === "login" ? "Se connecter" : "Créer mon compte"}
-        </button>
+          {mode === "signup" && (
+            <div>
+              <label style={labelStyle} htmlFor="familyName">
+                Family name
+              </label>
+              <input
+                id="familyName"
+                type="text"
+                value={familyName}
+                onChange={(e) => setFamilyName(e.target.value)}
+                style={inputStyle}
+                placeholder="Rivera Family"
+                autoComplete="organization"
+              />
+            </div>
+          )}
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          {mode === "login" ? "Pas encore de compte ? " : "Déjà un compte ? "}
-          <span className="text-green-700 font-bold cursor-pointer underline" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}>
-            {mode === "login" ? "S'inscrire" : "Se connecter"}
-          </span>
-        </p>
+          <div>
+            <label style={labelStyle} htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={inputStyle}
+              placeholder="••••••••"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+            />
+          </div>
+
+          {mode === "signup" && (
+            <div>
+              <label style={labelStyle} htmlFor="confirmPw">
+                Confirm password
+              </label>
+              <input
+                id="confirmPw"
+                type="password"
+                value={confirmPw}
+                onChange={(e) => setConfirmPw(e.target.value)}
+                style={inputStyle}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+            </div>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ margin: 0, color: "#64748b", fontSize: "0.95rem" }}>
+              {mode === "login" ? "Welcome back!" : "Secure your family dashboard."}
+            </p>
+            <button type="submit" disabled={loading} style={{ ...buttonStyle, opacity: loading ? 0.7 : 1 }}>
+              {loading ? "Please wait..." : mode === "login" ? "Log in" : "Create account"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  );
+  )
 }
