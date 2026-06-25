@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -25,11 +26,23 @@ export default function RemindersPage() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const router = useRouter();
+
   // Formulaire
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("");
   const [repeat, setRepeat] = useState("none");
   const [category, setCategory] = useState("general");
+
+  useEffect(() => {
+    const validateAuth = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        router.push("/login");
+      }
+    };
+    validateAuth();
+  }, [router]);
 
   // 1. Charger tous les reminders sans filtre user
   useEffect(() => {
@@ -101,24 +114,24 @@ export default function RemindersPage() {
     }
   };
 
-  const pageStyle = {
+  const pageStyle: CSSProperties = {
     backgroundColor: "#f8fafc",
     minHeight: "100vh",
     padding: "2rem 1rem",
   };
 
-  const containerStyle = {
+  const containerStyle: CSSProperties = {
     maxWidth: "980px",
     margin: "0 auto",
     padding: "0 0.5rem",
   };
 
-  const headerStyle = {
+  const headerStyle: CSSProperties = {
     marginBottom: "1.75rem",
     color: "#0f172a",
   };
 
-  const heroStyle = {
+  const heroStyle: CSSProperties = {
     backgroundColor: "#ffffff",
     borderRadius: "28px",
     border: "1px solid rgba(148, 163, 184, 0.16)",
@@ -127,7 +140,7 @@ export default function RemindersPage() {
     marginBottom: "1.5rem",
   };
 
-  const formCardStyle = {
+  const formCardStyle: CSSProperties = {
     backgroundColor: "#ffffff",
     borderRadius: "28px",
     border: "1px solid rgba(148, 163, 184, 0.16)",
@@ -136,21 +149,21 @@ export default function RemindersPage() {
     marginBottom: "1.5rem",
   };
 
-  const sectionTitleStyle = {
+  const sectionTitleStyle: CSSProperties = {
     margin: 0,
     fontSize: "1.4rem",
     fontWeight: 800,
     color: "#0f172a",
   };
 
-  const sectionTextStyle = {
+  const sectionTextStyle: CSSProperties = {
     marginTop: "0.65rem",
     color: "#475569",
     fontSize: "1rem",
     lineHeight: 1.75,
   };
 
-  const inputStyle = {
+  const inputStyle: CSSProperties = {
     width: "100%",
     border: "1px solid #e2e8f0",
     borderRadius: "1rem",
@@ -160,7 +173,7 @@ export default function RemindersPage() {
     backgroundColor: "#ffffff",
   };
 
-  const labelStyle = {
+  const labelStyle: CSSProperties = {
     display: "flex",
     flexDirection: "column",
     gap: "0.5rem",
@@ -182,12 +195,12 @@ export default function RemindersPage() {
     boxShadow: "0 16px 32px rgba(37, 99, 235, 0.18)",
   };
 
-  const reminderGridStyle = {
+  const reminderGridStyle: CSSProperties = {
     display: "grid",
     gap: "1rem",
   };
 
-  const reminderCardStyle = {
+  const reminderCardStyle: CSSProperties = {
     backgroundColor: "#ffffff",
     borderRadius: "24px",
     boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",

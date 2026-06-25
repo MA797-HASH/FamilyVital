@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -14,6 +15,7 @@ type FamilyMember = {
 };
 
 export default function MetricsPage() {
+  const router = useRouter();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState("");
@@ -24,7 +26,19 @@ export default function MetricsPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const validateAuth = async () => {
+      const { data, error } = await supabase.auth.getUser()
+      if (error || !data.user) {
+        router.push("/login")
+        return false
+      }
+      return true
+    }
+
     const fetchMembers = async () => {
+      const authorized = await validateAuth()
+      if (!authorized) return
+
       const { data, error } = await supabase
         .from("family_members")
         .select("id,name")

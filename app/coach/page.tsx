@@ -1,10 +1,17 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, type CSSProperties } from "react"
+import { useRouter } from "next/navigation"
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Leaf, Send, MessageCircleHeart } from "lucide-react"
+import { createClient } from "@supabase/supabase-js"
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 const suggestions = [
   "How can our family sleep better?",
@@ -28,7 +35,7 @@ const pageContainerStyle = {
   justifyContent: "center",
 }
 
-const pageCardStyle = {
+const pageCardStyle: CSSProperties = {
   width: "100%",
   maxWidth: "960px",
   backgroundColor: "#ffffff",
@@ -73,14 +80,14 @@ const headerSubtitleStyle = {
   fontSize: "0.95rem",
 }
 
-const contentStyle = {
+const contentStyle: CSSProperties = {
   flex: 1,
   display: "flex",
   flexDirection: "column",
   overflow: "hidden",
 }
 
-const messagesStyle = {
+const messagesStyle: CSSProperties = {
   flex: 1,
   overflowY: "auto",
   padding: "1.5rem",
@@ -118,13 +125,13 @@ const buttonStyle = {
   border: "none",
 }
 
-const welcomeCardStyle = {
+const welcomeCardStyle: CSSProperties = {
   width: "100%",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  textAlign: "center" as const,
+  textAlign: "center",
   gap: "1.25rem",
   height: "100%",
   padding: "2rem 1.5rem",
@@ -192,11 +199,22 @@ const dotStyle = {
 }
 
 export default function CoachPage() {
+  const router = useRouter()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const busy = loading
+
+  useEffect(() => {
+    const validateAuth = async () => {
+      const { data, error } = await supabase.auth.getUser()
+      if (error || !data.user) {
+        router.push("/login")
+      }
+    }
+    validateAuth()
+  }, [router])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
