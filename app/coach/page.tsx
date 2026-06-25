@@ -364,6 +364,14 @@ function renderMarkdown(text: string) {
   }
 
   const parts = text.split("\n").map((line, index) => {
+    if (line.startsWith("### ")) {
+      return (
+        <h3 key={index} style={{ ...headingStyle, fontSize: "0.98rem", marginTop: "1rem" }}>
+          {renderInline(line.slice(4))}
+        </h3>
+      )
+    }
+
     if (line.startsWith("## ")) {
       return (
         <h2 key={index} style={headingStyle}>
@@ -371,6 +379,15 @@ function renderMarkdown(text: string) {
         </h2>
       )
     }
+
+    if (line.startsWith("# ")) {
+      return (
+        <h2 key={index} style={{ ...headingStyle, fontSize: "1.2rem" }}>
+          {renderInline(line.slice(2))}
+        </h2>
+      )
+    }
+
     return (
       <p key={index} style={paragraphStyle}>
         {renderInline(line)}
