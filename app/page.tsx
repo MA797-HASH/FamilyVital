@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import type { CSSProperties } from "react"
 import { StatCard } from "@/components/stat-card"
 import { ActivityChart } from "@/components/activity-chart"
 import { MemberSnapshot } from "@/components/member-snapshot"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { reminders, memberById, type FamilyMember } from "@/lib/data"
+import { type FamilyMember } from "@/lib/data"
 import { createClient } from "@supabase/supabase-js"
 import { Footprints, Moon, Droplet, HeartPulse, MessageCircleHeart, ArrowRight, Bell } from "lucide-react"
 
@@ -17,10 +18,20 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+type Reminder = {
+  id: string
+  title: string
+  time: string
+  category: string
+  done: boolean
+  created_at?: string
+}
+
 export default function DashboardPage() {
   const [familyName, setFamilyName] = useState<string>("")
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [familyStreak, setFamilyStreak] = useState<number>(0)
+  const [upcoming, setUpcoming] = useState<Reminder[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -98,6 +109,19 @@ export default function DashboardPage() {
           }
         })
 
+        const { data: remindersData, error: remindersError } = await supabase
+          .from("reminders")
+          .select("id,title,time,category,done")
+          .order("created_at", { ascending: true })
+
+        if (remindersError) {
+          console.error("Erreur récupération des reminders:", remindersError)
+          setUpcoming([])
+        } else {
+          const fetchedReminders = (remindersData || []) as Reminder[]
+          setUpcoming(fetchedReminders.filter((r) => !r.done).slice(0, 4))
+        }
+
         const enrichedMembers: FamilyMember[] = members.map((m: any) => {
           const metrics = metricsByMemberId.get(String(m.id))
           return {
@@ -141,7 +165,6 @@ export default function DashboardPage() {
   const avgHr = familyMembers.length
     ? Math.round(familyMembers.reduce((s, m) => s + m.vitals.restingHr, 0) / familyMembers.length)
     : 0
-  const upcoming = reminders.filter((r) => !r.done).slice(0, 4)
 
   const pageStyle = {
     backgroundColor: "#f8fafc",
@@ -171,7 +194,7 @@ export default function DashboardPage() {
     marginTop: "1.5rem",
   }
 
-  const statCardBase = {
+  const statCardBase: CSSProperties = {
     borderRadius: "24px",
     padding: "1.5rem",
     color: "#ffffff",
@@ -323,32 +346,29 @@ export default function DashboardPage() {
               </Button>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              {upcoming.map((r) => {
-                const m = memberById(r.memberId)
-                return (
-                  <div
-                    key={r.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "1rem",
-                      borderRadius: "18px",
-                      padding: "1rem",
-                      backgroundColor: "#f8fafc",
-                      border: "1px solid rgba(148, 163, 184, 0.16)",
-                    }}
-                  >
-                    <div>
-                      <p style={{ margin: 0, fontSize: "0.98rem", fontWeight: 700, color: "#0f172a" }}>{r.title}</p>
-                      <p style={{ marginTop: "0.4rem", color: "#64748b", fontSize: "0.9rem" }}>
-                        {m?.name.split(" ")[0]} · {r.time}
-                      </p>
-                    </div>
-                    <Badge variant="secondary">{r.category}</Badge>
+              {upcoming.map((r) => (
+                <div
+                  key={r.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "1rem",
+                    borderRadius: "18px",
+                    padding: "1rem",
+                    backgroundColor: "#f8fafc",
+                    border: "1px solid rgba(148, 163, 184, 0.16)",
+                  }}
+                >
+                  <div>
+                    <p style={{ margin: 0, fontSize: "0.98rem", fontWeight: 700, color: "#0f172a" }}>{r.title}</p>
+                    <p style={{ marginTop: "0.4rem", color: "#64748b", fontSize: "0.9rem" }}>
+                      {r.time}
+                    </p>
                   </div>
-                )
-              })}
+                  <Badge variant="secondary">{r.category}</Badge>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </section>
