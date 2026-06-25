@@ -31,6 +31,7 @@ type Reminder = {
 export default function DashboardPage() {
   const router = useRouter()
   const [familyName, setFamilyName] = useState<string>("")
+  const [userName, setUserName] = useState<string>("")
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [familyStreak, setFamilyStreak] = useState<number>(0)
   const [upcoming, setUpcoming] = useState<Reminder[]>([])
@@ -48,6 +49,9 @@ export default function DashboardPage() {
         router.push("/login")
         return
       }
+
+      const authenticatedName = userData.user.user_metadata?.full_name || userData.user.email || ""
+      setUserName(authenticatedName)
 
       const loadData = async () => {
         try {
@@ -306,7 +310,9 @@ export default function DashboardPage() {
 
         <header style={{ ...sectionCardStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <p style={{ color: "#2563eb", fontWeight: 700, marginBottom: "0.5rem" }}>Good morning, {familyName}</p>
+            <p style={{ color: "#2563eb", fontWeight: 700, marginBottom: "0.5rem" }}>
+              Good morning, {userName || familyName || "Family"}
+            </p>
             <h1 style={{ fontSize: "2.6rem", lineHeight: 1.05, fontWeight: 800, color: "#111827", margin: 0 }}>
               Your family is thriving today
             </h1>
