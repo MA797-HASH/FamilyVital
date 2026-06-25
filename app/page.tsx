@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import type { CSSProperties } from "react"
 import { StatCard } from "@/components/stat-card"
 import { ActivityChart } from "@/components/activity-chart"
@@ -28,22 +29,35 @@ type Reminder = {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [familyName, setFamilyName] = useState<string>("")
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [familyStreak, setFamilyStreak] = useState<number>(0)
   const [upcoming, setUpcoming] = useState<Reminder[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const userRes = await fetch("/api/user")
-        if (!userRes.ok) {
-          setLoading(false)
-          return
-        }
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/login")
+  }
 
-        const userData = await userRes.json()
+  useEffect(() => {
+    const init = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+      if (userError || !userData.user) {
+        router.push("/login")
+        return
+      }
+
+      const loadData = async () => {
+        try {
+          const userRes = await fetch("/api/user")
+          if (!userRes.ok) {
+            setLoading(false)
+            return
+          }
+
+          const userData = await userRes.json()
         const members = userData.members || []
         setFamilyName(userData.familyName || "")
 
@@ -154,8 +168,11 @@ export default function DashboardPage() {
       }
     }
 
-    loadData()
-  }, [])
+    await loadData()
+  }
+
+  init()
+}, [router])
 
   const totalSteps = familyMembers.reduce((s, m) => s + m.metrics.steps.value, 0)
   const avgSleep = familyMembers.length
@@ -270,6 +287,21 @@ export default function DashboardPage() {
               AI Coach
             </Link>
           </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              color: "#111827",
+              fontWeight: 700,
+              padding: "0.55rem 0.95rem",
+              borderRadius: "0.85rem",
+              backgroundColor: "#f8fafc",
+              border: "1px solid rgba(148, 163, 184, 0.24)",
+              cursor: "pointer",
+            }}
+          >
+            Logout
+          </button>
         </div>
 
         <header style={{ ...sectionCardStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
