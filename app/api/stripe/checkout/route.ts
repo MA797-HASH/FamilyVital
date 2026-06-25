@@ -17,21 +17,31 @@ export async function POST(req: Request) {
       )
     }
 
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || "price_1QozO8D6s1NCBQ5CZjN5T0oL" // Fallback price ID for $9.99 CAD/month
+    // Get the app URL from environment or request
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${req.headers.get("host")}` || "http://localhost:3000"
 
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
-          price: priceId,
+          price_data: {
+            currency: "cad",
+            product_data: {
+              name: "FamilyVital Premium",
+            },
+            unit_amount: 999,
+            recurring: {
+              interval: "month",
+            },
+          },
           quantity: 1,
         },
       ],
       mode: "subscription",
       customer_email: email,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/subscribe?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/subscribe?canceled=true`,
+      success_url: `${appUrl}/subscribe?success=true`,
+      cancel_url: `${appUrl}/subscribe?canceled=true`,
       metadata: {
         userId,
       },
