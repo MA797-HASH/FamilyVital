@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { loadStripe } from "@stripe/js"
 import { Zap, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { createClient } from "@supabase/supabase-js"
 
 const supabase = createClient(
@@ -40,7 +38,7 @@ export default function SubscribePage() {
         return
       }
 
-      // Call your backend API to create a Stripe Checkout session
+      // Call backend API to create a Stripe Checkout session
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: {
@@ -48,7 +46,7 @@ export default function SubscribePage() {
         },
         body: JSON.stringify({
           email: user.email,
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+          userId: user.id,
         }),
       })
 
@@ -56,20 +54,13 @@ export default function SubscribePage() {
         throw new Error("Failed to create checkout session")
       }
 
-      const { sessionId } = await response.json()
+      const { checkoutUrl } = await response.json()
 
       // Redirect to Stripe Checkout
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-      if (!stripe) {
-        throw new Error("Failed to load Stripe")
-      }
-
-      const { error: stripeError } = await stripe.redirectToCheckout({
-        sessionId,
-      })
-
-      if (stripeError) {
-        setError(stripeError.message)
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl
+      } else {
+        throw new Error("No checkout URL received")
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
