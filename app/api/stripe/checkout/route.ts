@@ -7,6 +7,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 export async function POST(req: Request) {
   try {
+    // Log Stripe configuration
+    console.log("[Stripe] STRIPE_SECRET_KEY is", process.env.STRIPE_SECRET_KEY ? "defined" : "NOT defined")
+
     const body = await req.json()
     const { email, userId } = body
 
@@ -56,7 +59,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ checkoutUrl: session.url })
   } catch (err) {
-    console.error("Stripe checkout error:", err)
+    console.error("[Stripe Error]", {
+      message: err instanceof Error ? err.message : "Unknown error",
+      fullError: err,
+      type: err instanceof Error ? err.name : typeof err,
+    })
     const message = err instanceof Error ? err.message : "Internal server error"
     return NextResponse.json(
       { error: message },
