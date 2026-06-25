@@ -5,7 +5,6 @@ import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Leaf, Send, MessageCircleHeart } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 const suggestions = [
   "How can our family sleep better?",
@@ -18,6 +17,178 @@ type ChatMessage = {
   id: string
   role: "user" | "assistant"
   content: string
+}
+
+const pageContainerStyle = {
+  minHeight: "100vh",
+  width: "100%",
+  padding: "2rem 1rem",
+  backgroundColor: "#f8fafc",
+  display: "flex",
+  justifyContent: "center",
+}
+
+const pageCardStyle = {
+  width: "100%",
+  maxWidth: "960px",
+  backgroundColor: "#ffffff",
+  borderRadius: "28px",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+  boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
+  display: "flex",
+  flexDirection: "column",
+  minHeight: "calc(100vh - 4rem)",
+  overflow: "hidden",
+}
+
+const headerStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "1rem",
+  padding: "1.75rem 1.75rem 1.5rem",
+  borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
+}
+
+const headerIconStyle = {
+  width: "3rem",
+  height: "3rem",
+  borderRadius: "1rem",
+  display: "grid",
+  placeItems: "center",
+  backgroundColor: "#eff6ff",
+  color: "#2563eb",
+}
+
+const headerTitleStyle = {
+  margin: 0,
+  fontSize: "1.5rem",
+  fontWeight: 800,
+  color: "#111827",
+}
+
+const headerSubtitleStyle = {
+  margin: 0,
+  marginTop: "0.35rem",
+  color: "#64748b",
+  fontSize: "0.95rem",
+}
+
+const contentStyle = {
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+}
+
+const messagesStyle = {
+  flex: 1,
+  overflowY: "auto",
+  padding: "1.5rem",
+  display: "flex",
+  flexDirection: "column",
+  gap: "1rem",
+}
+
+const formStyle = {
+  display: "flex",
+  gap: "0.75rem",
+  alignItems: "center",
+  padding: "1.25rem 1.5rem 1.5rem",
+  borderTop: "1px solid rgba(148, 163, 184, 0.18)",
+  backgroundColor: "#f8fafc",
+}
+
+const inputStyle = {
+  flex: 1,
+  minWidth: 0,
+  borderRadius: "1rem",
+  border: "1px solid rgba(148, 163, 184, 0.3)",
+  padding: "0.95rem 1rem",
+  fontSize: "0.96rem",
+  color: "#0f172a",
+  backgroundColor: "#ffffff",
+}
+
+const buttonStyle = {
+  borderRadius: "1rem",
+  minWidth: "3rem",
+  padding: "0.95rem 1rem",
+  backgroundColor: "#2563eb",
+  color: "#ffffff",
+  border: "none",
+}
+
+const welcomeCardStyle = {
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center" as const,
+  gap: "1.25rem",
+  height: "100%",
+  padding: "2rem 1.5rem",
+}
+
+const suggestionGridStyle = {
+  width: "100%",
+  display: "grid",
+  gap: "0.75rem",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+}
+
+const suggestionStyle = {
+  borderRadius: "1rem",
+  border: "1px solid rgba(148, 163, 184, 0.28)",
+  backgroundColor: "#f8fafc",
+  padding: "1rem 1rem",
+  textAlign: "left" as const,
+  fontSize: "0.95rem",
+  color: "#0f172a",
+  cursor: "pointer",
+}
+
+const bubbleContainerStyle = {
+  display: "flex",
+}
+
+const bubbleBaseStyle = {
+  maxWidth: "82%",
+  padding: "1rem 1.2rem",
+  borderRadius: "24px",
+  fontSize: "0.95rem",
+  lineHeight: 1.65,
+  boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+  whiteSpace: "pre-wrap" as const,
+}
+
+const userBubbleStyle = {
+  ...bubbleBaseStyle,
+  alignSelf: "flex-end",
+  backgroundColor: "#2563eb",
+  color: "#ffffff",
+  borderRadius: "24px 24px 12px 24px",
+}
+
+const assistantBubbleStyle = {
+  ...bubbleBaseStyle,
+  alignSelf: "flex-start",
+  backgroundColor: "#f1f5f9",
+  color: "#0f172a",
+  borderRadius: "24px 24px 24px 12px",
+}
+
+const typingStyle = {
+  display: "inline-flex",
+  gap: "0.5rem",
+}
+
+const dotStyle = {
+  width: "0.6rem",
+  height: "0.6rem",
+  borderRadius: "999px",
+  backgroundColor: "rgba(15, 23, 42, 0.4)",
+  animation: "pulseDot 1s infinite ease-in-out",
 }
 
 export default function CoachPage() {
@@ -82,82 +253,92 @@ export default function CoachPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex h-[calc(100vh-3.5rem)] w-full max-w-3xl flex-col px-4 md:h-screen md:px-8">
-        <div className="flex items-center gap-3 border-b border-border py-4">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <MessageCircleHeart className="size-5" aria-hidden="true" />
-          </span>
-          <div>
-            <h1 className="font-heading text-lg font-bold text-foreground">FamilyVital Coach</h1>
-            <p className="text-xs text-muted-foreground">Personalized guidance for the Rivera family</p>
+      <div style={pageContainerStyle}>
+        <div style={pageCardStyle}>
+          <div style={headerStyle}>
+            <div style={headerIconStyle}>
+              <MessageCircleHeart style={{ width: "1.2rem", height: "1.2rem" }} aria-hidden="true" />
+            </div>
+            <div>
+              <h1 style={headerTitleStyle}>FamilyVital Coach</h1>
+              <p style={headerSubtitleStyle}>Personalized guidance for the Rivera family</p>
+            </div>
           </div>
-        </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto py-6">
-          {messages.length === 0 ? (
-            <Welcome onPick={submit} />
-          ) : (
-            <div className="flex flex-col gap-4">
-              {messages.map((m) => (
-                <Bubble key={m.id} role={m.role}>
-                  {m.content}
-                </Bubble>
-              ))}
-              {loading && (
-                <Bubble role="assistant">
-                  <span className="inline-flex gap-1">
-                    <Dot /> <Dot /> <Dot />
-                  </span>
-                </Bubble>
+          <div style={contentStyle}>
+            <div ref={scrollRef} style={messagesStyle}>
+              {messages.length === 0 ? (
+                <Welcome onPick={submit} />
+              ) : (
+                <>
+                  {messages.map((m) => (
+                    <Bubble key={m.id} role={m.role}>
+                      {m.content}
+                    </Bubble>
+                  ))}
+                  {loading && (
+                    <Bubble role="assistant">
+                      <span style={typingStyle}>
+                        <Dot />
+                        <Dot />
+                        <Dot />
+                      </span>
+                    </Bubble>
+                  )}
+                </>
               )}
             </div>
-          )}
-        </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            submit(input)
-          }}
-          className="flex items-center gap-2 border-t border-border py-4"
-        >
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask your family health coach..."
-            className="h-12 rounded-xl"
-            aria-label="Message"
-          />
-          <Button type="submit" size="icon" className="size-12 shrink-0 rounded-xl" disabled={busy || !input.trim()}>
-            <Send className="size-5" />
-            <span className="sr-only">Send</span>
-          </Button>
-        </form>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                submit(input)
+              }}
+              style={formStyle}
+            >
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask your family health coach..."
+                aria-label="Message"
+                style={inputStyle}
+              />
+              <Button type="submit" disabled={busy || !input.trim()} style={buttonStyle}>
+                <Send style={{ width: "1.15rem", height: "1.15rem" }} />
+              </Button>
+            </form>
+          </div>
+        </div>
       </div>
+      <style>{`
+        @keyframes pulseDot {
+          0%, 100% { opacity: 0.25; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-2px); }
+        }
+      `}</style>
     </AppShell>
   )
 }
 
 function Welcome({ onPick }: { onPick: (t: string) => void }) {
   return (
-    <div className="flex flex-col items-center gap-6 py-8 text-center">
-      <span className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <Leaf className="size-8" aria-hidden="true" />
-      </span>
+    <div style={welcomeCardStyle}>
+      <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "1.25rem", display: "grid", placeItems: "center", backgroundColor: "#eff6ff", color: "#2563eb" }}>
+        <Leaf style={{ width: "1.5rem", height: "1.5rem" }} aria-hidden="true" />
+      </div>
       <div>
-        <h2 className="font-heading text-2xl font-extrabold text-foreground text-balance">
-          Hi! I&apos;m your family health coach
-        </h2>
-        <p className="mt-1 max-w-md text-muted-foreground text-pretty">
-          Ask me anything about your family&apos;s sleep, activity, nutrition, or habits. I know everyone&apos;s goals.
+        <h2 style={{ margin: 0, fontSize: "2rem", fontWeight: 800, color: "#111827" }}>Hi! I'm your family health coach</h2>
+        <p style={{ marginTop: "0.75rem", color: "#64748b", fontSize: "1rem", maxWidth: "40rem", lineHeight: 1.7 }}>
+          Ask me anything about your family's sleep, activity, nutrition, or habits. I know everyone's goals.
         </p>
       </div>
-      <div className="grid w-full max-w-lg gap-2 sm:grid-cols-2">
+      <div style={suggestionGridStyle}>
         {suggestions.map((s) => (
           <button
             key={s}
+            type="button"
             onClick={() => onPick(s)}
-            className="rounded-xl border border-border bg-card p-3 text-left text-sm font-medium text-foreground transition-colors hover:border-primary hover:bg-muted/50"
+            style={suggestionStyle}
           >
             {s}
           </button>
@@ -170,21 +351,12 @@ function Welcome({ onPick }: { onPick: (t: string) => void }) {
 function Bubble({ role, children }: { role: string; children: React.ReactNode }) {
   const isUser = role === "user"
   return (
-    <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-      <div
-        className={cn(
-          "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed",
-          isUser
-            ? "rounded-br-sm bg-primary text-primary-foreground"
-            : "rounded-bl-sm bg-muted text-foreground",
-        )}
-      >
-        {children}
-      </div>
+    <div style={{ ...bubbleContainerStyle, justifyContent: isUser ? "flex-end" : "flex-start" }}>
+      <div style={isUser ? userBubbleStyle : assistantBubbleStyle}>{children}</div>
     </div>
   )
 }
 
 function Dot() {
-  return <span className="size-2 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.2s] first:[animation-delay:-0.3s]" />
+  return <span style={dotStyle} />
 }
