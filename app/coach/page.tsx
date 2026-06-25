@@ -348,11 +348,60 @@ function Welcome({ onPick }: { onPick: (t: string) => void }) {
   )
 }
 
+function renderMarkdown(text: string) {
+  const headingStyle = {
+    margin: "0 0 0.75rem 0",
+    color: "#0f172a",
+    fontSize: "1.05rem",
+    fontWeight: 700,
+  }
+
+  const paragraphStyle = {
+    margin: "0 0 0.75rem 0",
+    color: "#0f172a",
+    fontSize: "0.95rem",
+    lineHeight: 1.75,
+  }
+
+  const parts = text.split("\n").map((line, index) => {
+    if (line.startsWith("## ")) {
+      return (
+        <h2 key={index} style={headingStyle}>
+          {renderInline(line.slice(3))}
+        </h2>
+      )
+    }
+    return (
+      <p key={index} style={paragraphStyle}>
+        {renderInline(line)}
+      </p>
+    )
+  })
+
+  return parts
+}
+
+function renderInline(line: string) {
+  const tokens = line.split(/(\*\*[^*]+\*\*)/g)
+  return tokens.map((token, idx) => {
+    if (token.startsWith("**") && token.endsWith("**")) {
+      return (
+        <strong key={idx} style={{ fontWeight: 700 }}>
+          {token.slice(2, -2)}
+        </strong>
+      )
+    }
+    return token
+  })
+}
+
 function Bubble({ role, children }: { role: string; children: React.ReactNode }) {
   const isUser = role === "user"
+  const content = typeof children === "string" && role === "assistant" ? renderMarkdown(children) : children
+
   return (
     <div style={{ ...bubbleContainerStyle, justifyContent: isUser ? "flex-end" : "flex-start" }}>
-      <div style={isUser ? userBubbleStyle : assistantBubbleStyle}>{children}</div>
+      <div style={isUser ? userBubbleStyle : assistantBubbleStyle}>{content}</div>
     </div>
   )
 }
