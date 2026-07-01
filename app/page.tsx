@@ -301,6 +301,9 @@ export default function DashboardPage() {
             <Link href="/coach" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
               AI Coach
             </Link>
+            <Link href="/subscribe" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 800, padding: "0.6rem 1rem", borderRadius: "0.9rem", backgroundColor: "#f59e0b", boxShadow: "0 10px 24px rgba(245, 158, 11, 0.25)" }}>
+              Upgrade to Premium
+            </Link>
           </div>
           <button
             type="button"
