@@ -40,6 +40,14 @@ export function AppShell({ children, streak = 0 }: { children: React.ReactNode; 
               </Link>
             )
           })}
+
+          <Link
+            href="/subscribe"
+            className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-500 px-3 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-600"
+          >
+            <Leaf className="size-4" aria-hidden="true" />
+            Upgrade to premium
+          </Link>
         </nav>
         <div className="rounded-xl bg-sidebar-accent p-4">
           <div className="flex items-center gap-2 text-sidebar-accent-foreground">
@@ -76,6 +84,12 @@ export function AppShell({ children, streak = 0 }: { children: React.ReactNode; 
             </Link>
           )
         })}
+        <Link
+          href="/subscribe"
+          className="rounded-full bg-amber-500 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm"
+        >
+          Upgrade
+        </Link>
       </nav>
     </div>
   )
