@@ -116,10 +116,27 @@ const errorStyle = {
   fontSize: "0.95rem",
 }
 
+const infoStyle = {
+  color: "#1d4ed8",
+  backgroundColor: "#dbebff",
+  borderRadius: "1rem",
+  padding: "0.95rem 1rem",
+  fontSize: "0.95rem",
+}
+
 const hintStyle = {
   marginTop: "0.25rem",
   color: "#64748b",
   fontSize: "0.92rem",
+}
+
+const linkStyle = {
+  fontSize: "0.92rem",
+  color: "#2563eb",
+  background: "none",
+  border: "none",
+  padding: 0,
+  cursor: "pointer",
 }
 
 export default function LoginPage() {
@@ -130,7 +147,29 @@ export default function LoginPage() {
   const [confirmPw, setConfirmPw] = useState("")
   const [familyName, setFamilyName] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const handlePasswordReset = async () => {
+    setError(null)
+    setInfo(null)
+
+    if (!email) {
+      setError("Please enter your email address to reset your password.")
+      return
+    }
+
+    setLoading(true)
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email)
+    setLoading(false)
+
+    if (resetError) {
+      setError(resetError.message)
+      return
+    }
+
+    setInfo("Password reset email sent. Check your inbox for instructions.")
+  }
 
   const handle = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -277,6 +316,16 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 autoComplete="new-password"
               />
+            </div>
+          )}
+
+          {info && <div style={infoStyle}>{info}</div>}
+
+          {mode === "login" && (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button type="button" style={linkStyle} onClick={handlePasswordReset} disabled={loading}>
+                Forgot Password?
+              </button>
             </div>
           )}
 
