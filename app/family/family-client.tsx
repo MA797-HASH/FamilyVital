@@ -186,6 +186,7 @@ export default function FamilyClient({ user }: { user: User }) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<"free" | "premium">("free");
   const [upgradeMessage, setUpgradeMessage] = useState("");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useState(() => {
     const currentPlan = getStoredPlan();
@@ -198,6 +199,7 @@ export default function FamilyClient({ user }: { user: User }) {
     if (!name.trim()) return setError("Entrez un prénom.");
     if (!canAddMember(plan, members.length)) {
       setUpgradeMessage(`Free plan supports up to ${getFreeMemberLimit()} family member. Upgrade to Premium for unlimited family members.`);
+      setShowUpgradeModal(true);
       return;
     }
     const ageNum = parseInt(age, 10);
@@ -326,6 +328,23 @@ export default function FamilyClient({ user }: { user: User }) {
               <Link href="/subscribe" style={{ color: "#b45309", textDecoration: "underline", fontWeight: 700 }}>
                 Upgrade to Premium
               </Link>
+            </div>
+          </div>
+        ) : null}
+
+        {showUpgradeModal ? (
+          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.6)", display: "grid", placeItems: "center", zIndex: 50, padding: "1rem" }}>
+            <div style={{ backgroundColor: "#ffffff", borderRadius: "24px", padding: "1.5rem", maxWidth: "420px", width: "100%", boxShadow: "0 24px 64px rgba(15, 23, 42, 0.2)" }}>
+              <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: "#111827" }}>Upgrade to Premium</h3>
+              <p style={{ marginTop: "0.75rem", color: "#475569", lineHeight: 1.6 }}>{upgradeMessage}</p>
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem", flexWrap: "wrap" }}>
+                <Link href="/subscribe" style={{ backgroundColor: "#f59e0b", color: "#ffffff", textDecoration: "none", borderRadius: "0.9rem", padding: "0.7rem 1rem", fontWeight: 700 }}>
+                  Upgrade now
+                </Link>
+                <button type="button" onClick={() => setShowUpgradeModal(false)} style={{ backgroundColor: "#f8fafc", color: "#111827", border: "1px solid rgba(148, 163, 184, 0.24)", borderRadius: "0.9rem", padding: "0.7rem 1rem", fontWeight: 700, cursor: "pointer" }}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         ) : null}
