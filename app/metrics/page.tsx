@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
+import { getStoredPlan, isPremiumPlan, type Plan } from "@/lib/freemium";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,6 +26,8 @@ export default function MetricsPage() {
   const [waterGlasses, setWaterGlasses] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [plan, setPlan] = useState<Plan>("free");
+  const [upgradeMessage, setUpgradeMessage] = useState("");
 
   useEffect(() => {
     const validateAuth = async () => {
@@ -58,6 +62,10 @@ export default function MetricsPage() {
     fetchMembers();
   }, []);
 
+  useEffect(() => {
+    setPlan(getStoredPlan())
+  }, []);
+
   const handleSave = async () => {
     setMessage("");
 
@@ -65,6 +73,13 @@ export default function MetricsPage() {
       setMessage("Veuillez choisir un membre de la famille.");
       return;
     }
+
+    if (!isPremiumPlan(plan)) {
+      setUpgradeMessage("Free plan only includes basic metrics for steps and water. Upgrade to Premium to unlock all metrics and full history.");
+      return;
+    }
+
+    setUpgradeMessage("");
 
     const parsedSteps = parseInt(steps, 10);
     const parsedSleep = parseFloat(sleepHours);
@@ -314,6 +329,17 @@ export default function MetricsPage() {
                 style={inputStyle}
               />
             </label>
+
+            {upgradeMessage ? (
+              <div style={{ borderRadius: "1rem", border: "1px solid #fde68a", backgroundColor: "#fffbeb", padding: "0.9rem 1rem", color: "#92400e", fontWeight: 600 }}>
+                {upgradeMessage}
+                <div style={{ marginTop: "0.6rem" }}>
+                  <Link href="/subscribe" style={{ color: "#b45309", textDecoration: "underline", fontWeight: 700 }}>
+                    Upgrade to Premium
+                  </Link>
+                </div>
+              </div>
+            ) : null}
 
             <button type="button" onClick={handleSave} disabled={saving} style={primaryButtonStyle}>
               {saving ? "Enregistrement..." : "Enregistrer les métriques"}

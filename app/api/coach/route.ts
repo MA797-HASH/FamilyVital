@@ -20,10 +20,17 @@ function detectLanguage(message: string): "en" | "fr" {
 }
 
 export async function POST(req: Request) {
-  const { message } = await req.json()
+  const { message, plan, coachUsageCount } = await req.json()
 
   if (!message) {
     return NextResponse.json({ error: "Missing message" }, { status: 400 })
+  }
+
+  const normalizedPlan = plan === "premium" ? "premium" : "free"
+  const usageCount = typeof coachUsageCount === "number" ? coachUsageCount : 0
+
+  if (normalizedPlan !== "premium" && usageCount >= 5) {
+    return NextResponse.json({ error: "Free plan includes 5 AI Coach messages per month. Upgrade to Premium for unlimited AI Coach access." }, { status: 403 })
   }
 
   const language = detectLanguage(message)

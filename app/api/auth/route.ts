@@ -49,6 +49,21 @@ export async function POST(req: Request) {
   if (action === "addMember") {
     const { data: user } = await supabase.from("users").select("id").eq("email", email).single();
     if (!user) return NextResponse.json({ error: "Non connecté." }, { status: 401 });
+
+    const { data: existingMembers, error: memberCountError } = await supabase
+      .from("family_members")
+      .select("id")
+      .eq("user_id", user.id);
+
+    if (memberCountError) {
+      return NextResponse.json({ error: memberCountError.message }, { status: 500 });
+    }
+
+    const plan = body.plan === "premium" ? "premium" : "free";
+    if (plan !== "premium" && (existingMembers?.length || 0) >= 1) {
+      return NextResponse.json({ error: "Free plan supports up to 1 family member. Upgrade to Premium for unlimited family members." }, { status: 403 });
+    }
+
     const { error: insertError } = await supabase.from("family_members").insert({ ...member, user_id: user.id });
     if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
     const { data: members } = await supabase.from("family_members").select("*").eq("user_id", user.id);

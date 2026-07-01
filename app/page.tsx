@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { type FamilyMember } from "@/lib/data"
 import { createClient } from "@supabase/supabase-js"
 import { Footprints, Moon, Droplet, HeartPulse, MessageCircleHeart, ArrowRight, Bell } from "lucide-react"
+import { getStoredPlan, isPremiumPlan, type Plan } from "@/lib/freemium"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,11 +37,17 @@ export default function DashboardPage() {
   const [familyStreak, setFamilyStreak] = useState<number>(0)
   const [upcoming, setUpcoming] = useState<Reminder[]>([])
   const [loading, setLoading] = useState(true)
+  const [plan, setPlan] = useState<Plan>("free")
+  const [premiumNotice, setPremiumNotice] = useState("")
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push("/login")
   }
+
+  useEffect(() => {
+    setPlan(getStoredPlan())
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -324,13 +331,24 @@ export default function DashboardPage() {
               Here&apos;s how everyone is doing across their health goals.
             </p>
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ display: "flex", justifyContent: "flex-start", gap: "0.75rem", flexWrap: "wrap" }}>
             <Button render={<Link href="/coach" />} size="lg">
               <MessageCircleHeart className="size-5" />
               Ask your coach
             </Button>
+            {!isPremiumPlan(plan) ? (
+              <Button render={<Link href="/subscribe" />} variant="secondary" size="lg">
+                Upgrade to Premium
+              </Button>
+            ) : null}
           </div>
         </header>
+
+        {premiumNotice ? (
+          <div style={{ marginTop: "1rem", borderRadius: "1rem", border: "1px solid #fde68a", backgroundColor: "#fffbeb", padding: "0.9rem 1rem", color: "#92400e", fontWeight: 600 }}>
+            {premiumNotice}
+          </div>
+        ) : null}
 
         <section style={statsGridStyle}>
           <div style={{ ...statCardBase, ...statAccent.steps }}>

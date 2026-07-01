@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Leaf, Send, MessageCircleHeart } from "lucide-react"
 import { createClient } from "@supabase/supabase-js"
+import { canUseCoach, getCoachUsage, getFreeCoachLimit, getStoredPlan, recordCoachMessage, type Plan } from "@/lib/freemium"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -203,6 +204,9 @@ export default function CoachPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [plan, setPlan] = useState<Plan>("free")
+  const [coachUsage, setCoachUsage] = useState(0)
+  const [upgradeMessage, setUpgradeMessage] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const busy = loading
 
@@ -217,12 +221,28 @@ export default function CoachPage() {
   }, [router])
 
   useEffect(() => {
+    const currentPlan = getStoredPlan()
+    setPlan(currentPlan)
+    setCoachUsage(getCoachUsage().count)
+  }, [])
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   }, [messages, loading])
 
   async function sendMessage(text: string) {
     const value = text.trim()
     if (!value || busy) return
+
+    const currentUsage = getCoachUsage()
+    if (!canUseCoach(plan, currentUsage.count)) {
+      setUpgradeMessage(`Free plan includes ${getFreeCoachLimit()} AI Coach messages per month. Upgrade to Premium for unlimited AI Coach access.`)
+      return
+    }
+
+    setUpgradeMessage("")
+    const nextUsage = recordCoachMessage()
+    setCoachUsage(nextUsage.count)
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -306,6 +326,17 @@ export default function CoachPage() {
                 </>
               )}
             </div>
+
+            {upgradeMessage ? (
+              <div style={{ margin: "0 1.5rem 1rem", borderRadius: "1rem", border: "1px solid #fde68a", backgroundColor: "#fffbeb", padding: "0.9rem 1rem", color: "#92400e", fontWeight: 600 }}>
+                {upgradeMessage}
+                <div style={{ marginTop: "0.5rem" }}>
+                  <a href="/subscribe" style={{ color: "#b45309", textDecoration: "underline", fontWeight: 700 }}>
+                    Upgrade to Premium
+                  </a>
+                </div>
+              </div>
+            ) : null}
 
             <form
               onSubmit={(e) => {

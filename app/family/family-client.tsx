@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2 } from "lucide-react";
 import type { User, FamilyMember } from "@/lib/auth";
+import { canAddMember, getFreeMemberLimit, getStoredPlan, isPremiumPlan, setStoredPlan } from "@/lib/freemium";
 
 const COLORS = ["#1E5C3A", "#2E7D52", "#D4872B", "#6B4C9A", "#2C7BB6", "#C0392B"];
 const ROLES = ["Parent", "Enfant", "Grand-parent", "Autre"];
@@ -183,10 +184,22 @@ export default function FamilyClient({ user }: { user: User }) {
   const [role, setRole] = useState("Enfant");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState<"free" | "premium">("free");
+  const [upgradeMessage, setUpgradeMessage] = useState("");
+
+  useState(() => {
+    const currentPlan = getStoredPlan();
+    setPlan(currentPlan);
+  });
 
   const addMember = async () => {
     setError("");
+    setUpgradeMessage("");
     if (!name.trim()) return setError("Entrez un prénom.");
+    if (!canAddMember(plan, members.length)) {
+      setUpgradeMessage(`Free plan supports up to ${getFreeMemberLimit()} family member. Upgrade to Premium for unlimited family members.`);
+      return;
+    }
     const ageNum = parseInt(age, 10);
     if (!age || isNaN(ageNum) || ageNum < 0 || ageNum > 120) return setError("Âge invalide.");
     setLoading(true);
@@ -306,6 +319,16 @@ export default function FamilyClient({ user }: { user: User }) {
         </div>
 
         {error ? <p style={errorTextStyle}>⚠ {error}</p> : null}
+        {upgradeMessage ? (
+          <div style={{ marginTop: "0.75rem", borderRadius: "1rem", border: "1px solid #fde68a", backgroundColor: "#fffbeb", padding: "0.9rem 1rem", color: "#92400e", fontWeight: 600 }}>
+            {upgradeMessage}
+            <div style={{ marginTop: "0.6rem" }}>
+              <Link href="/subscribe" style={{ color: "#b45309", textDecoration: "underline", fontWeight: 700 }}>
+                Upgrade to Premium
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         <div style={formRowStyle}>
           <label style={labelStyle}>
