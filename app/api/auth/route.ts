@@ -14,7 +14,7 @@ function hashPassword(password: string): string {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { action, email, password, familyName, member, memberId } = body;
+  const { action, email, password, familyName, member, memberId, confirmPassword } = body;
 
   if (action === "logout") {
     const res = NextResponse.json({ ok: true });
@@ -76,6 +76,30 @@ export async function POST(req: Request) {
     await supabase.from("family_members").delete().eq("id", memberId);
     const { data: members } = await supabase.from("family_members").select("*").eq("user_id", user.id);
     return NextResponse.json({ ok: true, members });
+  }
+
+  if (action === "changePassword") {
+    const cookieStore = await cookies();
+    const sessionEmail = cookieStore.get("fv_session")?.value ?? null;
+    if (!sessionEmail) return NextResponse.json({ error: "Non connecté." }, { status: 401 });
+    if (!password || !confirmPassword) {
+      return NextResponse.json({ error: "Merci de renseigner les deux champs." }, { status: 400 });
+    }
+    if (password !== confirmPassword) {
+      return NextResponse.json({ error: "Les mots de passe ne correspondent pas." }, { status: 400 });
+    }
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Le mot de passe doit contenir au moins 6 caractères." }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from("users")
+      .update({ password_hash: hashPassword(password) })
+      .eq("email", sessionEmail);
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ ok: true });
   }
 
   return NextResponse.json({ error: "Action inconnue." }, { status: 400 });

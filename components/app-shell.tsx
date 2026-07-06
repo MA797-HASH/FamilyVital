@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Activity, LayoutDashboard, Users, Bell, MessageCircleHeart, Leaf } from "lucide-react"
+import { Activity, LayoutDashboard, Users, Bell, MessageCircleHeart, Leaf, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const nav = [
@@ -11,6 +11,7 @@ const nav = [
   { href: "/reminders", label: "Reminders & Goals", icon: Bell },
   { href: "/metrics", label: "Métriques", icon: Activity },
   { href: "/coach", label: "AI Coach", icon: MessageCircleHeart },
+  { href: "/settings", label: "Settings", icon: Settings },
 ]
 
 export function AppShell({ children, streak = 0 }: { children: React.ReactNode; streak?: number }) {
