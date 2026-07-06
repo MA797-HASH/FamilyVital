@@ -2,16 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-)
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -24,11 +18,17 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const verifySession = async () => {
-      const { data, error } = await supabase.auth.getUser()
-      if (error || !data.user) {
+      try {
+        const response = await fetch("/api/user", { credentials: "include" })
+        if (!response.ok) {
+          router.push("/login")
+          return
+        }
+      } catch {
         router.push("/login")
         return
       }
+
       setLoading(false)
     }
 
