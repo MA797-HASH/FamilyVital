@@ -305,21 +305,26 @@ export default function DashboardPage() {
               Upgrade to Premium
             </Link>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            style={{
-              color: "#111827",
-              fontWeight: 700,
-              padding: "0.55rem 0.95rem",
-              borderRadius: "0.85rem",
-              backgroundColor: "#f8fafc",
-              border: "1px solid rgba(148, 163, 184, 0.24)",
-              cursor: "pointer",
-            }}
-          >
-            Logout
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+            <Link href="/settings" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.24)" }}>
+              Settings
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              style={{
+                color: "#111827",
+                fontWeight: 700,
+                padding: "0.55rem 0.95rem",
+                borderRadius: "0.85rem",
+                backgroundColor: "#f8fafc",
+                border: "1px solid rgba(148, 163, 184, 0.24)",
+                cursor: "pointer",
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         <header style={{ ...sectionCardStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
