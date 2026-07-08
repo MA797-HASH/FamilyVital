@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
 
@@ -9,7 +9,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const pageStyle = {
+const pageStyle: CSSProperties = {
   minHeight: "100vh",
   width: "100%",
   padding: "2rem 1rem",
@@ -19,7 +19,7 @@ const pageStyle = {
   alignItems: "center",
 }
 
-const cardStyle = {
+const cardStyle: CSSProperties = {
   width: "100%",
   maxWidth: "480px",
   backgroundColor: "#ffffff",
@@ -29,31 +29,31 @@ const cardStyle = {
   overflow: "hidden",
 }
 
-const headerStyle = {
+const headerStyle: CSSProperties = {
   padding: "2rem 2rem 1.5rem",
   borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
 }
 
-const headerTitleStyle = {
+const headerTitleStyle: CSSProperties = {
   margin: 0,
   fontSize: "2rem",
   fontWeight: 800,
   color: "#111827",
 }
 
-const headerSubtitleStyle = {
+const headerSubtitleStyle: CSSProperties = {
   margin: "0.75rem 0 0",
   color: "#64748b",
   fontSize: "1rem",
   lineHeight: 1.7,
 }
 
-const tabBarStyle = {
+const tabBarStyle: CSSProperties = {
   display: "flex",
   borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
 }
 
-const tabStyle = {
+const tabStyle: CSSProperties = {
   flex: 1,
   padding: "1rem 1.25rem",
   cursor: "pointer",
@@ -62,22 +62,30 @@ const tabStyle = {
   fontSize: "1rem",
   fontWeight: 700,
   color: "#64748b",
+  transition: "all 0.2s ease",
 }
 
-const tabActiveStyle = {
+const loginTabActiveStyle: CSSProperties = {
   color: "#111827",
   borderBottom: "3px solid #2563eb",
   backgroundColor: "#ffffff",
 }
 
-const contentStyle = {
+const signupTabActiveStyle: CSSProperties = {
+  color: "#ffffff",
+  borderBottom: "3px solid #1d4ed8",
+  backgroundColor: "#2563eb",
+  boxShadow: "0 10px 24px rgba(37, 99, 235, 0.24)",
+}
+
+const contentStyle: CSSProperties = {
   padding: "1.75rem 2rem 2rem",
   display: "flex",
   flexDirection: "column",
   gap: "1rem",
 }
 
-const labelStyle = {
+const labelStyle: CSSProperties = {
   display: "block",
   marginBottom: "0.5rem",
   color: "#475569",
@@ -85,7 +93,7 @@ const labelStyle = {
   fontWeight: 700,
 }
 
-const inputStyle = {
+const inputStyle: CSSProperties = {
   width: "100%",
   borderRadius: "1rem",
   border: "1px solid rgba(148, 163, 184, 0.3)",
@@ -96,7 +104,7 @@ const inputStyle = {
   outline: "none",
 }
 
-const buttonStyle = {
+const buttonStyle: CSSProperties = {
   width: "100%",
   borderRadius: "1rem",
   border: "none",
@@ -108,7 +116,7 @@ const buttonStyle = {
   cursor: "pointer",
 }
 
-const errorStyle = {
+const errorStyle: CSSProperties = {
   color: "#b91c1c",
   backgroundColor: "#fee2e2",
   borderRadius: "1rem",
@@ -116,7 +124,7 @@ const errorStyle = {
   fontSize: "0.95rem",
 }
 
-const infoStyle = {
+const infoStyle: CSSProperties = {
   color: "#1d4ed8",
   backgroundColor: "#dbebff",
   borderRadius: "1rem",
@@ -124,13 +132,13 @@ const infoStyle = {
   fontSize: "0.95rem",
 }
 
-const hintStyle = {
+const hintStyle: CSSProperties = {
   marginTop: "0.25rem",
   color: "#64748b",
   fontSize: "0.92rem",
 }
 
-const linkStyle = {
+const linkStyle: CSSProperties = {
   fontSize: "0.92rem",
   color: "#2563eb",
   background: "none",
@@ -225,7 +233,7 @@ export default function LoginPage() {
           <p style={headerSubtitleStyle}>
             {mode === "login"
               ? "Sign in to manage your family health dashboard."
-              : "Create a new account so your family can stay on track."}
+              : "Create your free account in 30 seconds"}
           </p>
         </div>
 
@@ -235,7 +243,7 @@ export default function LoginPage() {
             onClick={() => { setMode("login"); setError(null) }}
             style={{
               ...tabStyle,
-              ...(mode === "login" ? tabActiveStyle : {}),
+              ...(mode === "login" ? loginTabActiveStyle : {}),
             }}
           >
             Login
@@ -245,7 +253,7 @@ export default function LoginPage() {
             onClick={() => { setMode("signup"); setError(null) }}
             style={{
               ...tabStyle,
-              ...(mode === "signup" ? tabActiveStyle : {}),
+              ...(mode === "signup" ? signupTabActiveStyle : {}),
             }}
           >
             Sign Up
