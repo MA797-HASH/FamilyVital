@@ -32,10 +32,40 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "$9.99",
+    price: "$9.99 CAD/month",
     description: "Unlimited members",
     perks: ["Unlimited family members", "AI coach access", "Advanced insights"],
     featured: true,
+  },
+]
+
+const testimonials = [
+  {
+    name: "Sarah M.",
+    quote: "This app completely changed how I manage my family's health. I can see everyone's progress in one place!",
+  },
+  {
+    name: "James T.",
+    quote: "The AI Health Coach is incredible. It gives personalized advice for each family member.",
+  },
+  {
+    name: "Emma R.",
+    quote: "Finally an app that helps me keep track of my whole family's wellness. Worth every penny!",
+  },
+]
+
+const faqs = [
+  {
+    question: "Is it really free?",
+    answer: "Yes, the free plan includes 1 family member with full health tracking.",
+  },
+  {
+    question: "Is my data secure?",
+    answer: "Yes, your data is encrypted and never shared.",
+  },
+  {
+    question: "Can I cancel anytime?",
+    answer: "Yes, no contracts, cancel anytime.",
   },
 ]
 
@@ -149,8 +179,41 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link href="/login" style={planButtonStyle(plan.featured)}>
-                  Start Free
+                  {plan.featured ? "Get Premium" : "Start Free"}
                 </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={sectionStyle}>
+        <div style={sectionHeadingStyle}>
+          <p style={eyebrowStyle}>Testimonials</p>
+          <h2 style={sectionTitleStyle}>Families love FamilyVital.</h2>
+        </div>
+        <div style={cardGridStyle}>
+          {testimonials.map((testimonial) => (
+            <article key={testimonial.name} style={featureCardStyle}>
+              <div style={{ marginBottom: "0.75rem", color: "#f59e0b", fontSize: "1rem" }}>★★★★★</div>
+              <p style={{ ...featureTextStyle, marginBottom: "0.9rem" }}>{testimonial.quote}</p>
+              <strong style={{ color: "#111827" }}>{testimonial.name}</strong>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section style={sectionStyle}>
+        <div style={pricingCardStyle}>
+          <div style={sectionHeadingStyle}>
+            <p style={eyebrowStyle}>FAQ</p>
+            <h2 style={sectionTitleStyle}>Common questions.</h2>
+          </div>
+          <div style={{ display: "grid", gap: "0.9rem" }}>
+            {faqs.map((faq) => (
+              <div key={faq.question} style={{ padding: "1rem 1.1rem", borderRadius: "18px", backgroundColor: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.16)" }}>
+                <h3 style={{ margin: "0 0 0.35rem", fontSize: "1rem", fontWeight: 800, color: "#111827" }}>{faq.question}</h3>
+                <p style={{ margin: 0, color: "#64748b", lineHeight: 1.7 }}>{faq.answer}</p>
               </div>
             ))}
           </div>
