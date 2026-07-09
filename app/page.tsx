@@ -69,37 +69,109 @@ const faqs = [
   },
 ]
 
+const steps = [
+  {
+    icon: "🎯",
+    title: "Create your account",
+    description: "Sign up free in 30 seconds, no credit card required.",
+  },
+  {
+    icon: "👨‍👩‍👧",
+    title: "Add your family members",
+    description: "Add everyone in your family and set their health goals.",
+  },
+  {
+    icon: "📊",
+    title: "Start tracking together",
+    description: "Log daily health data and watch your family thrive.",
+  },
+]
+
 export default function LandingPage() {
   const scrollToFeatures = () => {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   return (
-    <main style={pageStyle}>
+    <>
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .landing-nav {
+            border-radius: 24px;
+            padding: 0.8rem 0.9rem;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+          }
+
+          .landing-nav-actions {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .landing-hero-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .landing-button-row {
+            flex-direction: column;
+          }
+
+          .landing-primary-btn,
+          .landing-secondary-btn {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .landing-card-grid,
+          .landing-plan-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .landing-pricing-card {
+            padding: 1.25rem;
+          }
+
+          .landing-footer {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .landing-footer-links {
+            flex-direction: column;
+            gap: 0.6rem;
+          }
+        }
+      `}</style>
+      <main style={pageStyle}>
       <div style={heroShellStyle}>
-        <nav style={navStyle}>
+        <nav style={navStyle} className="landing-nav">
           <div style={brandStyle}>
             <div style={brandIconStyle}>❤</div>
             <span>FamilyVital</span>
           </div>
-          <Link href="/login" style={navLinkStyle}>
-            Login
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }} className="landing-nav-actions">
+            <Link href="/login" style={navLinkStyle}>
+              Login
+            </Link>
+            <Link href="/login" style={primaryButtonStyle}>
+              Start Free
+            </Link>
+          </div>
         </nav>
 
-        <section style={heroSectionStyle}>
+        <section style={heroSectionStyle} className="landing-hero-grid">
           <div style={heroContentStyle}>
             <div style={pillStyle}>Healthy habits, beautifully connected</div>
             <h1 style={headlineStyle}>Your Family&apos;s Health. One Place.</h1>
             <p style={subheadlineStyle}>
               Track sleep, water, steps, and nutrition for every member of your family — with an AI Health Coach available 24/7.
             </p>
-            <div style={buttonRowStyle}>
-              <Link href="/login" style={primaryButtonStyle}>
+            <div style={buttonRowStyle} className="landing-button-row">
+              <Link href="/login" style={primaryButtonStyle} className="landing-primary-btn">
                 Start Free
                 <ArrowRight size={18} />
               </Link>
-              <button type="button" onClick={scrollToFeatures} style={secondaryButtonStyle}>
+              <button type="button" onClick={scrollToFeatures} style={secondaryButtonStyle} className="landing-secondary-btn">
                 Learn More
               </button>
             </div>
@@ -137,12 +209,28 @@ export default function LandingPage() {
         </section>
       </div>
 
-      <section id="features" style={sectionStyle}>
+      <section style={sectionStyle} className="landing-section">
+        <div style={sectionHeadingStyle}>
+          <p style={eyebrowStyle}>How it works</p>
+          <h2 style={sectionTitleStyle}>A simple routine for healthier family habits.</h2>
+        </div>
+        <div style={cardGridStyle} className="landing-card-grid">
+          {steps.map((step) => (
+            <article key={step.title} style={featureCardStyle}>
+              <div style={{ ...featureIconStyle, fontSize: "1.25rem" }}>{step.icon}</div>
+              <h3 style={featureTitleStyle}>{step.title}</h3>
+              <p style={featureTextStyle}>{step.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" style={sectionStyle} className="landing-section">
         <div style={sectionHeadingStyle}>
           <p style={eyebrowStyle}>Features</p>
           <h2 style={sectionTitleStyle}>Everything your family needs to feel their best.</h2>
         </div>
-        <div style={cardGridStyle}>
+        <div style={cardGridStyle} className="landing-card-grid">
           {features.map((feature) => (
             <article key={feature.title} style={featureCardStyle}>
               <div style={featureIconStyle}>{feature.icon}</div>
@@ -162,7 +250,7 @@ export default function LandingPage() {
               Start free and grow with your family’s health goals.
             </p>
           </div>
-          <div style={planGridStyle}>
+          <div style={planGridStyle} className="landing-plan-grid">
             {plans.map((plan) => (
               <div key={plan.name} style={{ ...planCardStyle, ...(plan.featured ? featuredPlanStyle : {}) }}>
                 <div style={planHeaderStyle}>
@@ -187,7 +275,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section style={sectionStyle}>
+      <section style={sectionStyle} className="landing-section">
         <div style={sectionHeadingStyle}>
           <p style={eyebrowStyle}>Testimonials</p>
           <h2 style={sectionTitleStyle}>Families love FamilyVital.</h2>
@@ -219,7 +307,17 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-    </main>
+
+      <footer style={footerStyle} className="landing-footer">
+        <p style={{ margin: 0, color: "#64748b" }}>© 2026 FamilyVital. All rights reserved.</p>
+        <div style={footerLinksStyle} className="landing-footer-links">
+          <a href="#" style={footerLinkStyle}>Privacy Policy</a>
+          <a href="#" style={footerLinkStyle}>Terms of Service</a>
+          <a href="mailto:familyvital@gmail.com" style={footerLinkStyle}>Contact us at familyvital@gmail.com</a>
+        </div>
+      </footer>
+      </main>
+    </>
   )
 }
 
@@ -239,7 +337,16 @@ const navStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "1rem 0 2rem",
+  padding: "0.9rem 1rem",
+  position: "sticky",
+  top: 0,
+  zIndex: 50,
+  backgroundColor: "rgba(248, 251, 255, 0.92)",
+  backdropFilter: "blur(10px)",
+  borderRadius: "999px",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+  boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+  marginBottom: "1.5rem",
 }
 
 const brandStyle: CSSProperties = {
@@ -566,3 +673,27 @@ const planButtonStyle = (featured: boolean): CSSProperties => ({
   background: featured ? "linear-gradient(135deg, #2563eb 0%, #ec4899 100%)" : "#eff6ff",
   color: featured ? "#ffffff" : "#2563eb",
 })
+
+const footerStyle: CSSProperties = {
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "2rem 1.25rem 2.5rem",
+  display: "flex",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "1rem",
+  borderTop: "1px solid rgba(148, 163, 184, 0.2)",
+}
+
+const footerLinksStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "1rem",
+}
+
+const footerLinkStyle: CSSProperties = {
+  color: "#2563eb",
+  textDecoration: "none",
+  fontWeight: 600,
+}
