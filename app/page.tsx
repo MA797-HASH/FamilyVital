@@ -1,460 +1,505 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import type { CSSProperties } from "react"
-import { StatCard } from "@/components/stat-card"
-import { ActivityChart } from "@/components/activity-chart"
-import { MemberSnapshot } from "@/components/member-snapshot"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { type FamilyMember } from "@/lib/data"
-import { createClient } from "@supabase/supabase-js"
-import { Footprints, Moon, Droplet, HeartPulse, MessageCircleHeart, ArrowRight, Bell } from "lucide-react"
-import { getStoredPlan, isPremiumPlan, type Plan } from "@/lib/freemium"
+import { ArrowRight, BarChart3, HeartPulse, Sparkles } from "lucide-react"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const features = [
+  {
+    title: "Track Everything",
+    description: "Steps, sleep, water, and nutrition for the whole family in one calm place.",
+    icon: <BarChart3 size={24} />,
+  },
+  {
+    title: "AI Health Coach",
+    description: "Get personalized health advice instantly, whenever your family needs it.",
+    icon: <Sparkles size={24} />,
+  },
+  {
+    title: "Family Dashboard",
+    description: "See everyone’s progress at a glance and celebrate healthy habits together.",
+    icon: <HeartPulse size={24} />,
+  },
+]
 
-type Reminder = {
-  id: string
-  title: string
-  time: string
-  category: string
-  done: boolean
-  created_at?: string
-}
+const plans = [
+  {
+    name: "Free",
+    price: "0",
+    description: "For one family member",
+    perks: ["Daily health tracking", "Basic family overview"],
+    featured: false,
+  },
+  {
+    name: "Premium",
+    price: "$9.99",
+    description: "Unlimited members",
+    perks: ["Unlimited family members", "AI coach access", "Advanced insights"],
+    featured: true,
+  },
+]
 
-export default function DashboardPage() {
-  const router = useRouter()
-  const [familyName, setFamilyName] = useState<string>("")
-  const [userName, setUserName] = useState<string>("")
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
-  const [familyStreak, setFamilyStreak] = useState<number>(0)
-  const [upcoming, setUpcoming] = useState<Reminder[]>([])
-  const [loading, setLoading] = useState(true)
-  const [plan, setPlan] = useState<Plan>("free")
-  const [premiumNotice, setPremiumNotice] = useState("")
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
-
-  useEffect(() => {
-    setPlan(getStoredPlan())
-  }, [])
-
-  useEffect(() => {
-    const init = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser()
-      if (userError || !userData.user) {
-        router.push("/login")
-        return
-      }
-
-      const email = userData.user.email || ""
-      const authenticatedName =
-        userData.user.user_metadata?.full_name ||
-        (email.includes("@") ? email.split("@")[0] : email) ||
-        ""
-      setUserName(authenticatedName)
-
-      const loadData = async () => {
-        try {
-          const userRes = await fetch("/api/user")
-          if (!userRes.ok) {
-            setLoading(false)
-            return
-          }
-
-          const userData = await userRes.json()
-        const members = userData.members || []
-        setFamilyName(userData.familyName || "")
-
-        const memberIds = members.map((m: any) => m.id).filter(Boolean)
-        const today = new Date()
-        const todayString = today.toISOString().slice(0, 10)
-
-        const streakStart = new Date(today)
-        streakStart.setDate(today.getDate() - 30)
-        const streakStartString = streakStart.toISOString().slice(0, 10)
-
-        let todayMetrics: any[] = []
-        let streakMetrics: any[] = []
-
-        if (memberIds.length > 0) {
-          const { data: todayData, error: todayError } = await supabase
-            .from("health_metrics")
-            .select("family_member_id, steps, sleep_hours, water_glasses, date")
-            .in("family_member_id", memberIds)
-            .eq("date", todayString)
-
-          if (todayError) {
-            console.error("Erreur récupération metrics du jour:", todayError)
-          } else {
-            todayMetrics = todayData || []
-          }
-
-          const { data: streakData, error: streakError } = await supabase
-            .from("health_metrics")
-            .select("date")
-            .in("family_member_id", memberIds)
-            .gte("date", streakStartString)
-            .order("date", { ascending: false })
-
-          if (streakError) {
-            console.error("Erreur récupération du streak:", streakError)
-          } else {
-            streakMetrics = streakData || []
-          }
-        }
-
-        const streakDates = new Set(streakMetrics.map((row: any) => String(row.date)))
-        let streakCount = 0
-        for (let i = 0; i < 30; i++) {
-          const date = new Date(today)
-          date.setDate(today.getDate() - i)
-          const dateKey = date.toISOString().slice(0, 10)
-          if (streakDates.has(dateKey)) {
-            streakCount += 1
-          } else {
-            break
-          }
-        }
-
-        const metricsByMemberId = new Map<string, { steps: number; sleep_hours: number; water_glasses: number }>()
-        todayMetrics.forEach((row: any) => {
-          if (row.family_member_id) {
-            metricsByMemberId.set(String(row.family_member_id), {
-              steps: row.steps ?? 0,
-              sleep_hours: row.sleep_hours ?? 0,
-              water_glasses: row.water_glasses ?? 0,
-            })
-          }
-        })
-
-        const { data: remindersData, error: remindersError } = await supabase
-          .from("reminders")
-          .select("id,title,time,category,done")
-          .order("created_at", { ascending: true })
-
-        if (remindersError) {
-          console.error("Erreur récupération des reminders:", remindersError)
-          setUpcoming([])
-        } else {
-          const fetchedReminders = (remindersData || []) as Reminder[]
-          setUpcoming(fetchedReminders.filter((r) => !r.done).slice(0, 4))
-        }
-
-        const enrichedMembers: FamilyMember[] = members.map((m: any) => {
-          const metrics = metricsByMemberId.get(String(m.id))
-          return {
-            id: String(m.id),
-            name: m.name,
-            role: m.role,
-            age: m.age,
-            avatarColor: m.avatar_color ?? "#888",
-            initials: m.initials ?? m.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-            focus: m.focus,
-            metrics: {
-              steps: { value: metrics?.steps ?? 0, goal: 10000 },
-              sleep: { value: metrics?.sleep_hours ?? 0, goal: 8 },
-              water: { value: metrics?.water_glasses ?? 0, goal: 8 },
-              activeMinutes: { value: 0, goal: 60 },
-            },
-            vitals: {
-              restingHr: m.resting_hr ?? 0,
-              weeklyMood: 3,
-            },
-          }
-        })
-
-        setFamilyMembers(enrichedMembers)
-        setFamilyStreak(streakCount)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    await loadData()
-  }
-
-  init()
-}, [router])
-
-  const totalSteps = familyMembers.reduce((s, m) => s + m.metrics.steps.value, 0)
-  const avgSleep = familyMembers.length
-    ? (familyMembers.reduce((s, m) => s + m.metrics.sleep.value, 0) / familyMembers.length).toFixed(1)
-    : "0.0"
-  const totalWater = familyMembers.reduce((s, m) => s + m.metrics.water.value, 0)
-  const avgHr = familyMembers.length
-    ? Math.round(familyMembers.reduce((s, m) => s + m.vitals.restingHr, 0) / familyMembers.length)
-    : 0
-
-  const pageStyle = {
-    backgroundColor: "#f8fafc",
-    minHeight: "100vh",
-    padding: "2rem 0",
-  }
-
-  const contentStyle = {
-    width: "100%",
-    maxWidth: "1120px",
-    margin: "0 auto",
-    padding: "0 1rem",
-  }
-
-  const sectionCardStyle = {
-    backgroundColor: "#ffffff",
-    borderRadius: "24px",
-    boxShadow: "0 24px 64px rgba(15, 23, 42, 0.12)",
-    border: "1px solid rgba(148, 163, 184, 0.12)",
-    padding: "1.75rem",
-  }
-
-  const statsGridStyle = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "1rem",
-    marginTop: "1.5rem",
-  }
-
-  const statCardBase: CSSProperties = {
-    borderRadius: "24px",
-    padding: "1.5rem",
-    color: "#ffffff",
-    minHeight: "150px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
-  }
-
-  const statAccent = {
-    steps: { background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)" },
-    sleep: { background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)" },
-    water: { background: "linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)" },
-    hr: { background: "linear-gradient(135deg, #ec4899 0%, #fb7185 100%)" },
-  }
-
-  const statLabelStyle = {
-    opacity: 0.9,
-    fontSize: "0.95rem",
-    letterSpacing: "0.01em",
-  }
-
-  const statValueStyle = {
-    fontSize: "2.5rem",
-    fontWeight: 700,
-    marginTop: "0.75rem",
-    lineHeight: 1,
-  }
-
-  const statMetaStyle = {
-    opacity: 0.88,
-    fontSize: "0.95rem",
-    marginTop: "1rem",
-  }
-
-  if (loading) {
-    return <div className="p-6">Chargement...</div>
+export default function LandingPage() {
+  const scrollToFeatures = () => {
+    document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   return (
-    <div style={pageStyle}>
-      <div style={contentStyle}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "0.75rem",
-            marginBottom: "1.5rem",
-            padding: "1rem 1.25rem",
-            borderRadius: "24px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 24px 64px rgba(15, 23, 42, 0.08)",
-            border: "1px solid rgba(148, 163, 184, 0.12)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-            <Link href="/" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
-              Dashboard
-            </Link>
-            <Link href="/family" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
-              Family
-            </Link>
-            <Link href="/reminders" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
-              Reminders
-            </Link>
-            <Link href="/metrics" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
-              Métriques
-            </Link>
-            <Link href="/coach" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#eff6ff" }}>
-              AI Coach
-            </Link>
-            <Link href="/subscribe" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 800, padding: "0.6rem 1rem", borderRadius: "0.9rem", backgroundColor: "#f59e0b", boxShadow: "0 10px 24px rgba(245, 158, 11, 0.25)" }}>
-              Upgrade to Premium
-            </Link>
+    <main style={pageStyle}>
+      <div style={heroShellStyle}>
+        <nav style={navStyle}>
+          <div style={brandStyle}>
+            <div style={brandIconStyle}>❤</div>
+            <span>FamilyVital</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-            <Link href="/settings" style={{ color: "#111827", textDecoration: "none", fontWeight: 700, padding: "0.55rem 0.95rem", borderRadius: "0.85rem", backgroundColor: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.24)" }}>
-              Settings
-            </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                color: "#111827",
-                fontWeight: 700,
-                padding: "0.55rem 0.95rem",
-                borderRadius: "0.85rem",
-                backgroundColor: "#f8fafc",
-                border: "1px solid rgba(148, 163, 184, 0.24)",
-                cursor: "pointer",
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
+          <Link href="/login" style={navLinkStyle}>
+            Login
+          </Link>
+        </nav>
 
-        <header style={{ ...sectionCardStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div>
-            <p style={{ color: "#2563eb", fontWeight: 700, marginBottom: "0.5rem" }}>
-              Good morning, {userName || familyName || "Family"}
+        <section style={heroSectionStyle}>
+          <div style={heroContentStyle}>
+            <div style={pillStyle}>Healthy habits, beautifully connected</div>
+            <h1 style={headlineStyle}>Your Family&apos;s Health. One Place.</h1>
+            <p style={subheadlineStyle}>
+              Track sleep, water, steps, and nutrition for every member of your family — with an AI Health Coach available 24/7.
             </p>
-            <h1 style={{ fontSize: "2.6rem", lineHeight: 1.05, fontWeight: 800, color: "#111827", margin: 0 }}>
-              Your family is thriving today
-            </h1>
-            <p style={{ marginTop: "0.9rem", color: "#475569", fontSize: "1.05rem", maxWidth: "680px" }}>
-              Here&apos;s how everyone is doing across their health goals.
-            </p>
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-start", gap: "0.75rem", flexWrap: "wrap" }}>
-            <Button render={<Link href="/coach" />} size="lg">
-              <MessageCircleHeart className="size-5" />
-              Ask your coach
-            </Button>
-            {!isPremiumPlan(plan) ? (
-              <Button render={<Link href="/subscribe" />} variant="secondary" size="lg">
-                Upgrade to Premium
-              </Button>
-            ) : null}
-          </div>
-        </header>
-
-        {premiumNotice ? (
-          <div style={{ marginTop: "1rem", borderRadius: "1rem", border: "1px solid #fde68a", backgroundColor: "#fffbeb", padding: "0.9rem 1rem", color: "#92400e", fontWeight: 600 }}>
-            {premiumNotice}
-          </div>
-        ) : null}
-
-        <section style={statsGridStyle}>
-          <div style={{ ...statCardBase, ...statAccent.steps }}>
-            <div>
-              <div style={statLabelStyle}>Family steps today</div>
-              <div style={statValueStyle}>{totalSteps.toLocaleString()}</div>
+            <div style={buttonRowStyle}>
+              <Link href="/login" style={primaryButtonStyle}>
+                Start Free
+                <ArrowRight size={18} />
+              </Link>
+              <button type="button" onClick={scrollToFeatures} style={secondaryButtonStyle}>
+                Learn More
+              </button>
             </div>
-            <div style={statMetaStyle}>Goal: 10,000 steps</div>
-          </div>
-
-          <div style={{ ...statCardBase, ...statAccent.sleep }}>
-            <div>
-              <div style={statLabelStyle}>Avg sleep</div>
-              <div style={statValueStyle}>{avgSleep}h</div>
+            <div style={trustRowStyle}>
+              <span style={trustBubbleStyle}>Sleep</span>
+              <span style={trustBubbleStyle}>Hydration</span>
+              <span style={trustBubbleStyle}>Nutrition</span>
             </div>
-            <div style={statMetaStyle}>Target: 8 hours per night</div>
           </div>
 
-          <div style={{ ...statCardBase, ...statAccent.water }}>
-            <div>
-              <div style={statLabelStyle}>Glasses of water</div>
-              <div style={statValueStyle}>{totalWater}</div>
+          <div style={heroCardStyle}>
+            <div style={heroCardTopStyle}>
+              <div style={heroCardBadgeStyle}>Family Score</div>
+              <div style={heroCardValueStyle}>94%</div>
             </div>
-            <div style={statMetaStyle}>Hydration goal: 8 glasses</div>
-          </div>
-
-          <div style={{ ...statCardBase, ...statAccent.hr }}>
-            <div>
-              <div style={statLabelStyle}>Avg resting HR</div>
-              <div style={statValueStyle}>{avgHr} bpm</div>
-            </div>
-            <div style={statMetaStyle}>Family wellness score</div>
-          </div>
-        </section>
-
-        <section style={{ marginTop: "1.5rem", display: "grid", gap: "1rem", gridTemplateColumns: "1.7fr 1fr" }}>
-          <div style={{ ...sectionCardStyle, minHeight: "430px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#111827" }}>Activity overview</h2>
-                <p style={{ marginTop: "0.5rem", color: "#64748b", fontSize: "0.95rem" }}>Daily family movement and trends.</p>
+            <div style={heroCardGridStyle}>
+              <div style={heroMetricStyle}>
+                <span style={heroMetricLabelStyle}>Steps</span>
+                <strong>82,400</strong>
+              </div>
+              <div style={heroMetricStyle}>
+                <span style={heroMetricLabelStyle}>Sleep</span>
+                <strong>7.8h</strong>
+              </div>
+              <div style={heroMetricStyle}>
+                <span style={heroMetricLabelStyle}>Water</span>
+                <strong>24 cups</strong>
+              </div>
+              <div style={heroMetricStyle}>
+                <span style={heroMetricLabelStyle}>Coach</span>
+                <strong>Online</strong>
               </div>
             </div>
-            <ActivityChart />
-          </div>
-
-          <Card style={{ ...sectionCardStyle, padding: "1.5rem" }}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-heading">
-                <Bell className="size-5 text-primary" />
-                Up next
-              </CardTitle>
-              <Button render={<Link href="/reminders" />} variant="ghost" size="sm">
-                All <ArrowRight className="size-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {upcoming.map((r) => (
-                <div
-                  key={r.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    borderRadius: "18px",
-                    padding: "1rem",
-                    backgroundColor: "#f8fafc",
-                    border: "1px solid rgba(148, 163, 184, 0.16)",
-                  }}
-                >
-                  <div>
-                    <p style={{ margin: 0, fontSize: "0.98rem", fontWeight: 700, color: "#0f172a" }}>{r.title}</p>
-                    <p style={{ marginTop: "0.4rem", color: "#64748b", fontSize: "0.9rem" }}>
-                      {r.time}
-                    </p>
-                  </div>
-                  <Badge variant="secondary">{r.category}</Badge>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </section>
-
-        <section style={{ marginTop: "1.75rem" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-            <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 700, color: "#111827" }}>Family snapshot</h2>
-            <Button render={<Link href="/family" />} variant="ghost" size="sm">
-              View profiles <ArrowRight className="size-4" />
-            </Button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {familyMembers.map((m) => (
-              <MemberSnapshot key={m.id} member={m} />
-            ))}
           </div>
         </section>
       </div>
-    </div>
+
+      <section id="features" style={sectionStyle}>
+        <div style={sectionHeadingStyle}>
+          <p style={eyebrowStyle}>Features</p>
+          <h2 style={sectionTitleStyle}>Everything your family needs to feel their best.</h2>
+        </div>
+        <div style={cardGridStyle}>
+          {features.map((feature) => (
+            <article key={feature.title} style={featureCardStyle}>
+              <div style={featureIconStyle}>{feature.icon}</div>
+              <h3 style={featureTitleStyle}>{feature.title}</h3>
+              <p style={featureTextStyle}>{feature.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section style={sectionStyle}>
+        <div style={pricingCardStyle}>
+          <div style={pricingTextStyle}>
+            <p style={eyebrowStyle}>Pricing</p>
+            <h2 style={sectionTitleStyle}>Simple plans for every family.</h2>
+            <p style={featureTextStyle}>
+              Start free and grow with your family’s health goals.
+            </p>
+          </div>
+          <div style={planGridStyle}>
+            {plans.map((plan) => (
+              <div key={plan.name} style={{ ...planCardStyle, ...(plan.featured ? featuredPlanStyle : {}) }}>
+                <div style={planHeaderStyle}>
+                  <h3 style={planTitleStyle}>{plan.name}</h3>
+                  {plan.featured ? <span style={featuredBadgeStyle}>Most Popular</span> : null}
+                </div>
+                <div style={priceStyle}>{plan.price}</div>
+                <p style={planDescriptionStyle}>{plan.description}</p>
+                <ul style={planListStyle}>
+                  {plan.perks.map((perk) => (
+                    <li key={perk} style={planListItemStyle}>
+                      {perk}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" style={planButtonStyle(plan.featured)}>
+                  Start Free
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
   )
 }
+
+const pageStyle: CSSProperties = {
+  minHeight: "100vh",
+  background: "linear-gradient(135deg, #f8fbff 0%, #fdf2f8 100%)",
+  color: "#0f172a",
+}
+
+const heroShellStyle: CSSProperties = {
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "1.25rem 1.25rem 3rem",
+}
+
+const navStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "1rem 0 2rem",
+}
+
+const brandStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "0.75rem",
+  fontWeight: 800,
+  fontSize: "1.05rem",
+  color: "#111827",
+}
+
+const brandIconStyle: CSSProperties = {
+  display: "grid",
+  placeItems: "center",
+  width: "2.2rem",
+  height: "2.2rem",
+  borderRadius: "999px",
+  background: "linear-gradient(135deg, #2563eb 0%, #ec4899 100%)",
+  color: "#ffffff",
+  boxShadow: "0 12px 24px rgba(37, 99, 235, 0.22)",
+}
+
+const navLinkStyle: CSSProperties = {
+  color: "#2563eb",
+  textDecoration: "none",
+  fontWeight: 700,
+  padding: "0.65rem 1rem",
+  borderRadius: "999px",
+  backgroundColor: "rgba(37, 99, 235, 0.1)",
+}
+
+const heroSectionStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1.1fr 0.9fr",
+  gap: "2rem",
+  alignItems: "center",
+  padding: "2rem 0 1rem",
+}
+
+const heroContentStyle: CSSProperties = {
+  maxWidth: "640px",
+}
+
+const pillStyle: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "0.5rem 0.85rem",
+  borderRadius: "999px",
+  backgroundColor: "rgba(236, 72, 153, 0.12)",
+  color: "#be185d",
+  fontWeight: 700,
+  fontSize: "0.95rem",
+  marginBottom: "1rem",
+}
+
+const headlineStyle: CSSProperties = {
+  fontSize: "clamp(2.5rem, 5vw, 4.2rem)",
+  lineHeight: 1.05,
+  fontWeight: 800,
+  margin: "0 0 1rem",
+  color: "#111827",
+}
+
+const subheadlineStyle: CSSProperties = {
+  fontSize: "1.1rem",
+  lineHeight: 1.75,
+  color: "#475569",
+  marginBottom: "1.6rem",
+}
+
+const buttonRowStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "0.9rem",
+  marginBottom: "1rem",
+}
+
+const primaryButtonStyle: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.5rem",
+  textDecoration: "none",
+  padding: "0.95rem 1.25rem",
+  borderRadius: "999px",
+  background: "linear-gradient(135deg, #2563eb 0%, #ec4899 100%)",
+  color: "#ffffff",
+  fontWeight: 700,
+  boxShadow: "0 16px 30px rgba(37, 99, 235, 0.2)",
+}
+
+const secondaryButtonStyle: CSSProperties = {
+  border: "1px solid rgba(148, 163, 184, 0.25)",
+  backgroundColor: "#ffffff",
+  color: "#111827",
+  padding: "0.95rem 1.25rem",
+  borderRadius: "999px",
+  fontWeight: 700,
+  cursor: "pointer",
+}
+
+const trustRowStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "0.7rem",
+  marginTop: "0.75rem",
+}
+
+const trustBubbleStyle: CSSProperties = {
+  padding: "0.5rem 0.8rem",
+  borderRadius: "999px",
+  backgroundColor: "rgba(255,255,255,0.8)",
+  border: "1px solid rgba(148, 163, 184, 0.2)",
+  color: "#475569",
+  fontSize: "0.95rem",
+}
+
+const heroCardStyle: CSSProperties = {
+  background: "rgba(255,255,255,0.86)",
+  backdropFilter: "blur(10px)",
+  borderRadius: "32px",
+  boxShadow: "0 30px 70px rgba(15, 23, 42, 0.12)",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+  padding: "1.4rem",
+}
+
+const heroCardTopStyle: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "1rem",
+}
+
+const heroCardBadgeStyle: CSSProperties = {
+  color: "#2563eb",
+  fontWeight: 700,
+  backgroundColor: "rgba(37, 99, 235, 0.12)",
+  padding: "0.5rem 0.75rem",
+  borderRadius: "999px",
+}
+
+const heroCardValueStyle: CSSProperties = {
+  fontSize: "2rem",
+  fontWeight: 800,
+  color: "#111827",
+}
+
+const heroCardGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "0.75rem",
+}
+
+const heroMetricStyle: CSSProperties = {
+  padding: "1rem",
+  borderRadius: "20px",
+  background: "linear-gradient(135deg, #eff6ff 0%, #fdf2f8 100%)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.3rem",
+}
+
+const heroMetricLabelStyle: CSSProperties = {
+  color: "#64748b",
+  fontSize: "0.9rem",
+}
+
+const sectionStyle: CSSProperties = {
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "2rem 1.25rem 3rem",
+}
+
+const sectionHeadingStyle: CSSProperties = {
+  textAlign: "center",
+  marginBottom: "1.5rem",
+}
+
+const eyebrowStyle: CSSProperties = {
+  color: "#ec4899",
+  fontWeight: 800,
+  letterSpacing: "0.2em",
+  textTransform: "uppercase",
+  fontSize: "0.8rem",
+  marginBottom: "0.3rem",
+}
+
+const sectionTitleStyle: CSSProperties = {
+  fontSize: "clamp(1.7rem, 3vw, 2.3rem)",
+  fontWeight: 800,
+  color: "#111827",
+  margin: 0,
+}
+
+const cardGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+  gap: "1rem",
+}
+
+const featureCardStyle: CSSProperties = {
+  backgroundColor: "#ffffff",
+  borderRadius: "24px",
+  padding: "1.4rem",
+  boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+}
+
+const featureIconStyle: CSSProperties = {
+  width: "2.7rem",
+  height: "2.7rem",
+  borderRadius: "999px",
+  display: "grid",
+  placeItems: "center",
+  marginBottom: "1rem",
+  color: "#2563eb",
+  background: "linear-gradient(135deg, #eff6ff 0%, #fdf2f8 100%)",
+}
+
+const featureTitleStyle: CSSProperties = {
+  margin: "0 0 0.5rem",
+  fontSize: "1.15rem",
+  fontWeight: 800,
+  color: "#111827",
+}
+
+const featureTextStyle: CSSProperties = {
+  margin: 0,
+  color: "#64748b",
+  lineHeight: 1.7,
+}
+
+const pricingCardStyle: CSSProperties = {
+  background: "rgba(255,255,255,0.92)",
+  borderRadius: "32px",
+  padding: "2rem",
+  boxShadow: "0 30px 70px rgba(15, 23, 42, 0.12)",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+}
+
+const pricingTextStyle: CSSProperties = {
+  textAlign: "center",
+  marginBottom: "1.5rem",
+}
+
+const planGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+  gap: "1rem",
+}
+
+const planCardStyle: CSSProperties = {
+  borderRadius: "24px",
+  padding: "1.4rem",
+  border: "1px solid rgba(148, 163, 184, 0.18)",
+  backgroundColor: "#ffffff",
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.8rem",
+}
+
+const featuredPlanStyle: CSSProperties = {
+  background: "linear-gradient(135deg, #eff6ff 0%, #fdf2f8 100%)",
+  borderColor: "rgba(37, 99, 235, 0.25)",
+}
+
+const planHeaderStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "0.5rem",
+}
+
+const planTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: "1.1rem",
+  fontWeight: 800,
+  color: "#111827",
+}
+
+const featuredBadgeStyle: CSSProperties = {
+  backgroundColor: "#2563eb",
+  color: "#ffffff",
+  padding: "0.3rem 0.6rem",
+  borderRadius: "999px",
+  fontSize: "0.8rem",
+  fontWeight: 700,
+}
+
+const priceStyle: CSSProperties = {
+  fontSize: "2rem",
+  fontWeight: 800,
+  color: "#111827",
+}
+
+const planDescriptionStyle: CSSProperties = {
+  margin: 0,
+  color: "#64748b",
+}
+
+const planListStyle: CSSProperties = {
+  listStyle: "none",
+  padding: 0,
+  margin: 0,
+  display: "grid",
+  gap: "0.5rem",
+}
+
+const planListItemStyle: CSSProperties = {
+  color: "#334155",
+  display: "flex",
+  alignItems: "center",
+  gap: "0.45rem",
+}
+
+const planButtonStyle = (featured: boolean): CSSProperties => ({
+  display: "inline-flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: "0.4rem",
+  textDecoration: "none",
+  padding: "0.9rem 1rem",
+  borderRadius: "999px",
+  fontWeight: 700,
+  background: featured ? "linear-gradient(135deg, #2563eb 0%, #ec4899 100%)" : "#eff6ff",
+  color: featured ? "#ffffff" : "#2563eb",
+})
