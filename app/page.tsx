@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import type { CSSProperties } from "react"
+import { useEffect, useState, type CSSProperties } from "react"
 import { ArrowRight, BarChart3, HeartPulse, Sparkles } from "lucide-react"
 
 const features = [
@@ -87,14 +87,101 @@ const steps = [
   },
 ]
 
+const stats = [
+  { value: 500, suffix: "+", label: "Families Tracked" },
+  { value: 10000, suffix: "+", label: "Health Logs" },
+  { value: 24, suffix: "/7", label: "AI Coach Available" },
+]
+
+const trustBadges = [
+  { icon: "🔒", text: "Secure & Private" },
+  { icon: "✅", text: "No credit card required" },
+  { icon: "⭐", text: "Trusted by families worldwide" },
+]
+
 export default function LandingPage() {
+  const [counterValues, setCounterValues] = useState(stats.map(() => 0))
+  const [statsAnimated, setStatsAnimated] = useState(false)
+
   const scrollToFeatures = () => {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  useEffect(() => {
+    const revealElements = Array.from(document.querySelectorAll(".reveal"))
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible")
+          }
+        })
+      },
+      { threshold: 0.15 }
+    )
+
+    revealElements.forEach((element) => observer.observe(element))
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const statsSection = document.getElementById("stats-section")
+    if (!statsSection || statsAnimated) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return
+
+        const duration = 1400
+        const start = performance.now()
+
+        const tick = (now: number) => {
+          const progress = Math.min((now - start) / duration, 1)
+          const eased = 1 - Math.pow(1 - progress, 3)
+
+          setCounterValues(stats.map((item) => Math.round(item.value * eased)))
+
+          if (progress < 1) {
+            requestAnimationFrame(tick)
+          }
+        }
+
+        requestAnimationFrame(tick)
+        setStatsAnimated(true)
+        observer.disconnect()
+      },
+      { threshold: 0.35 }
+    )
+
+    observer.observe(statsSection)
+
+    return () => observer.disconnect()
+  }, [statsAnimated])
+
+  const formatCounterValue = (item: (typeof stats)[number], value: number) => {
+    if (item.suffix === "/7") return `${value}/7`
+    return `${value.toLocaleString()}${item.suffix}`
   }
 
   return (
     <>
       <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+
+        .reveal {
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .reveal.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
         @media (max-width: 768px) {
           .landing-nav {
             border-radius: 24px;
@@ -143,7 +230,7 @@ export default function LandingPage() {
         }
       `}</style>
       <main style={pageStyle}>
-      <div style={heroShellStyle}>
+      <div style={heroShellStyle} className="reveal">
         <nav style={navStyle} className="landing-nav">
           <div style={brandStyle}>
             <div style={brandIconStyle}>❤</div>
@@ -175,10 +262,12 @@ export default function LandingPage() {
                 Learn More
               </button>
             </div>
-            <div style={trustRowStyle}>
-              <span style={trustBubbleStyle}>Sleep</span>
-              <span style={trustBubbleStyle}>Hydration</span>
-              <span style={trustBubbleStyle}>Nutrition</span>
+            <div style={trustRowStyle} className="reveal">
+              {trustBadges.map((badge) => (
+                <span key={badge.text} style={trustBubbleStyle}>
+                  {badge.icon} {badge.text}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -225,7 +314,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="features" style={sectionStyle} className="landing-section">
+      <section id="stats-section" style={statsSectionStyle} className="landing-section reveal">
+        <div style={sectionHeadingStyle}>
+          <p style={eyebrowStyle}>Community impact</p>
+          <h2 style={sectionTitleStyle}>Families are building healthier habits every day.</h2>
+        </div>
+        <div style={statsGridStyle}>
+          {stats.map((stat, index) => (
+            <div key={stat.label} style={statsCardStyle} className="reveal">
+              <div style={statsValueStyle}>{formatCounterValue(stat, counterValues[index])}</div>
+              <p style={statsLabelStyle}>{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" style={sectionStyle} className="landing-section reveal">
         <div style={sectionHeadingStyle}>
           <p style={eyebrowStyle}>Features</p>
           <h2 style={sectionTitleStyle}>Everything your family needs to feel their best.</h2>
@@ -308,7 +412,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer style={footerStyle} className="landing-footer">
+      <section style={finalCtaSectionStyle} className="landing-section reveal">
+        <div style={finalCtaCardStyle}>
+          <p style={eyebrowStyle}>Join today</p>
+          <h2 style={finalCtaHeadlineStyle}>Ready to transform your family&apos;s health?</h2>
+          <p style={finalCtaSubheadlineStyle}>Join hundreds of families already thriving with FamilyVital</p>
+          <Link href="/login" style={finalCtaButtonStyle}>
+            Start Free Today
+          </Link>
+        </div>
+      </section>
+
+      <footer style={footerStyle} className="landing-footer reveal">
         <p style={{ margin: 0, color: "#64748b" }}>© 2026 FamilyVital. All rights reserved.</p>
         <div style={footerLinksStyle} className="landing-footer-links">
           <a href="#" style={footerLinkStyle}>Privacy Policy</a>
@@ -331,6 +446,9 @@ const heroShellStyle: CSSProperties = {
   maxWidth: "1280px",
   margin: "0 auto",
   padding: "1.25rem 1.25rem 3rem",
+  background: "linear-gradient(135deg, #2e1065 0%, #4338ca 45%, #2563eb 100%)",
+  borderRadius: "40px",
+  boxShadow: "0 30px 70px rgba(46, 16, 101, 0.28)",
 }
 
 const navStyle: CSSProperties = {
@@ -395,8 +513,8 @@ const pillStyle: CSSProperties = {
   alignItems: "center",
   padding: "0.5rem 0.85rem",
   borderRadius: "999px",
-  backgroundColor: "rgba(236, 72, 153, 0.12)",
-  color: "#be185d",
+  backgroundColor: "rgba(255,255,255,0.16)",
+  color: "#f8fafc",
   fontWeight: 700,
   fontSize: "0.95rem",
   marginBottom: "1rem",
@@ -407,13 +525,13 @@ const headlineStyle: CSSProperties = {
   lineHeight: 1.05,
   fontWeight: 800,
   margin: "0 0 1rem",
-  color: "#111827",
+  color: "#ffffff",
 }
 
 const subheadlineStyle: CSSProperties = {
   fontSize: "1.1rem",
   lineHeight: 1.75,
-  color: "#475569",
+  color: "#e2e8f0",
   marginBottom: "1.6rem",
 }
 
@@ -457,14 +575,14 @@ const trustRowStyle: CSSProperties = {
 const trustBubbleStyle: CSSProperties = {
   padding: "0.5rem 0.8rem",
   borderRadius: "999px",
-  backgroundColor: "rgba(255,255,255,0.8)",
-  border: "1px solid rgba(148, 163, 184, 0.2)",
-  color: "#475569",
+  backgroundColor: "rgba(255,255,255,0.16)",
+  border: "1px solid rgba(255,255,255,0.18)",
+  color: "#f8fafc",
   fontSize: "0.95rem",
 }
 
 const heroCardStyle: CSSProperties = {
-  background: "rgba(255,255,255,0.86)",
+  background: "rgba(255,255,255,0.9)",
   backdropFilter: "blur(10px)",
   borderRadius: "32px",
   boxShadow: "0 30px 70px rgba(15, 23, 42, 0.12)",
@@ -673,6 +791,79 @@ const planButtonStyle = (featured: boolean): CSSProperties => ({
   background: featured ? "linear-gradient(135deg, #2563eb 0%, #ec4899 100%)" : "#eff6ff",
   color: featured ? "#ffffff" : "#2563eb",
 })
+
+const statsSectionStyle: CSSProperties = {
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "2rem 1.25rem 3rem",
+}
+
+const statsGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "1rem",
+}
+
+const statsCardStyle: CSSProperties = {
+  background: "linear-gradient(135deg, #eff6ff 0%, #fdf2f8 100%)",
+  borderRadius: "24px",
+  padding: "1.5rem",
+  textAlign: "center",
+  boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+}
+
+const statsValueStyle: CSSProperties = {
+  fontSize: "2rem",
+  fontWeight: 800,
+  color: "#111827",
+  marginBottom: "0.35rem",
+}
+
+const statsLabelStyle: CSSProperties = {
+  margin: 0,
+  color: "#475569",
+  fontWeight: 600,
+}
+
+const finalCtaSectionStyle: CSSProperties = {
+  maxWidth: "1280px",
+  margin: "0 auto",
+  padding: "2rem 1.25rem 3rem",
+}
+
+const finalCtaCardStyle: CSSProperties = {
+  background: "linear-gradient(135deg, #2e1065 0%, #4c1d95 45%, #4338ca 100%)",
+  borderRadius: "32px",
+  padding: "2rem",
+  textAlign: "center",
+  color: "#ffffff",
+  boxShadow: "0 30px 70px rgba(46, 16, 101, 0.28)",
+}
+
+const finalCtaHeadlineStyle: CSSProperties = {
+  fontSize: "clamp(1.8rem, 3vw, 2.5rem)",
+  fontWeight: 800,
+  margin: "0.35rem 0 0.7rem",
+}
+
+const finalCtaSubheadlineStyle: CSSProperties = {
+  margin: "0 0 1.2rem",
+  color: "#e2e8f0",
+  fontSize: "1.05rem",
+}
+
+const finalCtaButtonStyle: CSSProperties = {
+  display: "inline-flex",
+  justifyContent: "center",
+  alignItems: "center",
+  textDecoration: "none",
+  padding: "0.95rem 1.4rem",
+  borderRadius: "999px",
+  backgroundColor: "#ffffff",
+  color: "#4c1d95",
+  fontWeight: 800,
+}
 
 const footerStyle: CSSProperties = {
   maxWidth: "1280px",
