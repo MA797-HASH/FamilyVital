@@ -25,7 +25,7 @@ const features = [
 const plans = [
   {
     name: "Free",
-    price: "0",
+    price: "$0 / month",
     description: "For one family member",
     perks: ["Daily health tracking", "Basic family overview"],
     featured: false,
