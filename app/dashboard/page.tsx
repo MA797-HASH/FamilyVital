@@ -2,14 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
 import { AppShell } from "@/components/app-shell"
 import type { User } from "@/lib/auth"
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -18,12 +12,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const validateAuth = async () => {
-      const { data, error } = await supabase.auth.getUser()
-      if (error || !data.user) {
-        router.push("/login")
-        return
-      }
-
       const response = await fetch("/api/user")
       if (!response.ok) {
         router.push("/login")

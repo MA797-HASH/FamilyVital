@@ -196,14 +196,17 @@ export default function LoginPage() {
     setLoading(true)
 
     if (mode === "login") {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "login", email, password }),
       })
 
+      const result = (await response.json().catch(() => ({}))) as { error?: string }
       setLoading(false)
-      if (authError) {
-        setError(authError.message)
+
+      if (!response.ok || result.error) {
+        setError(result.error || "Login failed. Please try again.")
         return
       }
 
@@ -211,14 +214,17 @@ export default function LoginPage() {
       return
     }
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
+    const response = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "signup", email, password, familyName }),
     })
 
+    const result = (await response.json().catch(() => ({}))) as { error?: string }
     setLoading(false)
-    if (signUpError) {
-      setError(signUpError.message)
+
+    if (!response.ok || result.error) {
+      setError(result.error || "Sign up failed. Please try again.")
       return
     }
 
